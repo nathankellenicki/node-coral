@@ -178,7 +178,7 @@ export class DoubleMotorDevice extends CoralDevice {
   }
 
   async setMovementSteering(value: number): Promise<void> {
-    await this.connection.request(createMovementSetTurnSteeringCommand(Math.round(value)));
+    await this.connection.request(createMovementSetTurnSteeringCommand(clampSpeed(value)));
   }
 
   async turn(degrees: number, direction: MovementDirectionName): Promise<void> {

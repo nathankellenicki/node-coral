@@ -1,12 +1,14 @@
 import { EventEmitter } from "events";
 import noble, { Characteristic, Peripheral, Service } from "@stoprocent/noble";
 import {
+  CommandStatus,
   CoralCommand,
   CoralIncomingMessage,
   DeviceNotificationMessage,
   DeviceSensorPayload,
   InfoResponse,
   MessageType,
+  ResponseStatus,
   createDeviceNotificationRequest,
   createInfoRequest,
   encodeMessage,
@@ -121,7 +123,12 @@ export class CoralConnection extends EventEmitter {
     if (pendingQueue && pendingQueue.length > 0) {
       const request = pendingQueue.shift();
       if (request) {
-        request.resolve(parsed);
+        try {
+          this.ensureSuccess(parsed);
+          request.resolve(parsed);
+        } catch (error) {
+          request.reject(error instanceof Error ? error : new Error(String(error)));
+        }
       }
       if (pendingQueue.length === 0) {
         this.pending.delete(responseKey);
@@ -150,6 +157,54 @@ export class CoralConnection extends EventEmitter {
       }
     }
     this.pending.delete(key);
+  }
+
+  private ensureSuccess(message: CoralIncomingMessage): void {
+    switch (message.id) {
+      case MessageType.BeginFirmwareUpdateResponse:
+      case MessageType.DeviceNotificationResponse:
+        if (message.status !== ResponseStatus.Ack) {
+          throw new Error(
+            `Command ${MessageType[message.id]} failed with status ${ResponseStatus[message.status] ?? message.status}`
+          );
+        }
+        return;
+      case MessageType.LightColorResult:
+      case MessageType.BeepResult:
+      case MessageType.StopSoundResult:
+      case MessageType.MotorResetRelativePositionResult:
+      case MessageType.MotorSetSpeedResult:
+      case MessageType.MotorSetDutyCycleResult:
+      case MessageType.MotorRunResult:
+      case MessageType.MotorRunForDegreesResult:
+      case MessageType.MotorRunForTimeResult:
+      case MessageType.MotorRunToAbsolutePositionResult:
+      case MessageType.MotorRunToRelativePositionResult:
+      case MessageType.MotorStopResult:
+      case MessageType.MotorSetEndStateResult:
+      case MessageType.MotorSetAccelerationResult:
+      case MessageType.MovementMoveResult:
+      case MessageType.MovementMoveForTimeResult:
+      case MessageType.MovementMoveForDegreesResult:
+      case MessageType.MovementMoveTankResult:
+      case MessageType.MovementMoveTankForTimeResult:
+      case MessageType.MovementMoveTankForDegreesResult:
+      case MessageType.MovementStopResult:
+      case MessageType.MovementSetSpeedResult:
+      case MessageType.MovementSetEndStateResult:
+      case MessageType.MovementSetAccelerationResult:
+      case MessageType.MovementSetTurnSteeringResult:
+      case MessageType.ImuSetYawFaceResult:
+      case MessageType.ImuResetYawAxisResult:
+        if (message.status !== CommandStatus.Completed) {
+          throw new Error(
+            `Command ${MessageType[message.id]} failed with status ${CommandStatus[message.status] ?? message.status}`
+          );
+        }
+        return;
+      default:
+        return;
+    }
   }
 }
 

@@ -1048,7 +1048,7 @@ export function encodeMessage(message: CoralCommand): Buffer {
       pushUint8(bytes, message.deceleration);
       break;
     case MessageType.MovementSetTurnSteeringCommand:
-      pushUint8(bytes, message.steering);
+      pushInt8(bytes, message.steering);
       break;
     case MessageType.ImuSetYawFaceCommand:
       bytes.push(message.yawFace);
@@ -1370,7 +1370,7 @@ export function mapProductToKind(device: ProductGroupDevice): CoralDeviceKind | 
     case ProductGroupDevice.CoralColorSensor:
       return "ColorSensor";
     case ProductGroupDevice.CoralJoystick:
-      return "Remote";
+      return "Controller";
     default:
       return "unknown";
   }

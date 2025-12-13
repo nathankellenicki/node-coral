@@ -2,7 +2,14 @@ import { EventEmitter } from "events";
 import noble, { Peripheral } from "@stoprocent/noble";
 import { CoralDeviceKind, DEFAULT_NOTIFICATION_INTERVAL_MS } from "./constants";
 import { CoralConnection, matchesCoralService } from "./connection";
-import { CoralDevice, CoralDeviceInfo, ColorSensorDevice, DoubleMotorDevice, RemoteDevice, SingleMotorDevice } from "./devices";
+import {
+  CoralDevice,
+  CoralDeviceInfo,
+  ColorSensorDevice,
+  ControllerDevice,
+  DoubleMotorDevice,
+  SingleMotorDevice
+} from "./devices";
 import { mapProductToKind } from "./protocol";
 
 export interface CoralDiscoverEventMap {
@@ -26,7 +33,13 @@ export class Coral extends EventEmitter {
     }
     this.scanning = true;
     this.adapter.on("discover", this.handleDiscoverBound);
-    await this.startScanning();
+    try {
+      await this.startScanning();
+    } catch (error) {
+      this.adapter.removeListener("discover", this.handleDiscoverBound);
+      this.scanning = false;
+      throw error;
+    }
   }
 
   stop(): void {
@@ -75,6 +88,9 @@ export class Coral extends EventEmitter {
       const device = await this.prepareDevice(peripheral);
       if (device) {
         this.discovered.add(peripheral.id);
+        peripheral.once("disconnect", () => {
+          this.discovered.delete(peripheral.id);
+        });
         this.emit("discover", device);
       }
     } catch (error) {
@@ -115,8 +131,8 @@ function createDeviceInstance(
       return new DoubleMotorDevice(connection, kind, info);
     case "ColorSensor":
       return new ColorSensorDevice(connection, kind, info);
-    case "Remote":
-      return new RemoteDevice(connection, kind, info);
+    case "Controller":
+      return new ControllerDevice(connection, kind, info);
     default:
       return new SingleMotorDevice(connection, kind, info);
   }

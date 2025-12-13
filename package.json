@@ -9,7 +9,7 @@
     "build": "tsc -b",
     "clean": "rimraf dist",
     "prepare": "npm run build",
-    "test": "echo \"No tests configured\""
+    "test": "node scripts/run-tests.js"
   },
   "keywords": [
     "lego",
