@@ -1,0 +1,9 @@
+node_modules/
+tsconfig.tsbuildinfo
+
+tests/**/*.js
+tests/**/*.js.map
+tests/**/*.d.ts
+tests/**/*.d.ts.map
+
+dist/

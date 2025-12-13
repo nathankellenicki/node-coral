@@ -9,7 +9,8 @@
     "build": "tsc -b",
     "clean": "rimraf dist",
     "prepare": "npm run build",
-    "test": "node scripts/run-tests.js"
+    "test:e2e": "node scripts/run-tests-e2e.js",
+    "test:unit": "node scripts/run-tests-unit.js"
   },
   "keywords": [
     "lego",

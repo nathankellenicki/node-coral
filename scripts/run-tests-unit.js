@@ -4,7 +4,7 @@ const { readdirSync, statSync } = require("fs");
 const { join, resolve } = require("path");
 
 const ROOT = resolve(__dirname, "..");
-const TEST_ROOT = resolve(ROOT, "tests/devices");
+const TEST_ROOT = resolve(ROOT, "tests/unit");
 const TEST_PATTERN = /\.test\.ts$/;
 
 function collectTests(dir) {
@@ -47,11 +47,11 @@ function safeStat(path) {
 const tests = collectTests(TEST_ROOT).sort();
 
 if (tests.length === 0) {
-  console.log("No test files found under", TEST_ROOT);
+  console.log("No unit test files found under", TEST_ROOT);
   process.exit(0);
 }
 
-console.log("[run-tests] Test files:", tests.join(", "));
+console.log("[run-tests:unit] Test files:", tests.join(", "));
 
 let index = 0;
 
@@ -68,7 +68,7 @@ function runNext(previousCode) {
   }
   const file = tests[index];
   index += 1;
-  console.log(`\n[run-tests] Starting ${file}`);
+  console.log(`\n[run-tests:unit] Starting ${file}`);
   const args = ["--test", "--require", "ts-node/register", file];
   const child = spawn(process.execPath, args, { stdio: "inherit" });
   let handled = false;
@@ -77,7 +77,7 @@ function runNext(previousCode) {
       return;
     }
     handled = true;
-    console.log(`[run-tests] Finished ${file} with code ${code ?? 0}${signal ? ` signal ${signal}` : ""}`);
+    console.log(`[run-tests:unit] Finished ${file} with code ${code ?? 0}${signal ? ` signal ${signal}` : ""}`);
     if (signal) {
       process.kill(process.pid, signal);
       return;

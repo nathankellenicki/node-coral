@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { Coral } from "../../src/coral";
-import { ControllerDevice } from "../../src/devices";
-import { ButtonPayload, JoystickPayload, MotionSensorPayload } from "../../src/protocol";
+import { Coral } from "../../../src/coral";
+import { ControllerDevice } from "../../../src/devices";
+import { ButtonPayload, JoystickPayload, MotionSensorPayload } from "../../../src/protocol";
 import { scheduleProcessExit } from "../helpers/test-utils";
 
 const SCAN_TIMEOUT_MS = Number(process.env.CORAL_TEST_SCAN_TIMEOUT ?? 45_000);

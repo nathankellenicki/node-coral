@@ -246,17 +246,16 @@ export interface DeviceNotificationResponse {
   status: ResponseStatus;
 }
 
+type CommandStatusResult<T extends MessageType> = { id: T; status: CommandStatus };
+type MotorCommandResult<T extends MessageType> = CommandStatusResult<T> & { motorBitMask: MotorBits };
+
 export interface MotorSetSpeedCommand {
   id: MessageType.MotorSetSpeedCommand;
   motorBitMask: MotorBits;
   speed: number;
 }
 
-export interface MotorSetSpeedResult {
-  id: MessageType.MotorSetSpeedResult;
-  motorBitMask: MotorBits;
-  status: CommandStatus;
-}
+export type MotorSetSpeedResult = MotorCommandResult<MessageType.MotorSetSpeedResult>;
 
 export interface MotorSetDutyCycleCommand {
   id: MessageType.MotorSetDutyCycleCommand;
@@ -264,11 +263,7 @@ export interface MotorSetDutyCycleCommand {
   dutyCycle: number;
 }
 
-export interface MotorSetDutyCycleResult {
-  id: MessageType.MotorSetDutyCycleResult;
-  motorBitMask: MotorBits;
-  status: CommandStatus;
-}
+export type MotorSetDutyCycleResult = MotorCommandResult<MessageType.MotorSetDutyCycleResult>;
 
 export interface MotorRunCommand {
   id: MessageType.MotorRunCommand;
@@ -276,11 +271,7 @@ export interface MotorRunCommand {
   direction: MotorMoveDirection;
 }
 
-export interface MotorRunResult {
-  id: MessageType.MotorRunResult;
-  motorBitMask: MotorBits;
-  status: CommandStatus;
-}
+export type MotorRunResult = MotorCommandResult<MessageType.MotorRunResult>;
 
 export interface MotorResetRelativePositionCommand {
   id: MessageType.MotorResetRelativePositionCommand;
@@ -288,11 +279,7 @@ export interface MotorResetRelativePositionCommand {
   position: number;
 }
 
-export interface MotorResetRelativePositionResult {
-  id: MessageType.MotorResetRelativePositionResult;
-  motorBitMask: MotorBits;
-  status: CommandStatus;
-}
+export type MotorResetRelativePositionResult = MotorCommandResult<MessageType.MotorResetRelativePositionResult>;
 
 export interface MotorRunForDegreesCommand {
   id: MessageType.MotorRunForDegreesCommand;
@@ -301,11 +288,7 @@ export interface MotorRunForDegreesCommand {
   direction: MotorMoveDirection;
 }
 
-export interface MotorRunForDegreesResult {
-  id: MessageType.MotorRunForDegreesResult;
-  motorBitMask: MotorBits;
-  status: CommandStatus;
-}
+export type MotorRunForDegreesResult = MotorCommandResult<MessageType.MotorRunForDegreesResult>;
 
 export interface MotorRunForTimeCommand {
   id: MessageType.MotorRunForTimeCommand;
@@ -314,11 +297,7 @@ export interface MotorRunForTimeCommand {
   direction: MotorMoveDirection;
 }
 
-export interface MotorRunForTimeResult {
-  id: MessageType.MotorRunForTimeResult;
-  motorBitMask: MotorBits;
-  status: CommandStatus;
-}
+export type MotorRunForTimeResult = MotorCommandResult<MessageType.MotorRunForTimeResult>;
 
 export interface MotorRunToAbsolutePositionCommand {
   id: MessageType.MotorRunToAbsolutePositionCommand;
@@ -327,11 +306,7 @@ export interface MotorRunToAbsolutePositionCommand {
   direction: MotorMoveDirection;
 }
 
-export interface MotorRunToAbsolutePositionResult {
-  id: MessageType.MotorRunToAbsolutePositionResult;
-  motorBitMask: MotorBits;
-  status: CommandStatus;
-}
+export type MotorRunToAbsolutePositionResult = MotorCommandResult<MessageType.MotorRunToAbsolutePositionResult>;
 
 export interface MotorRunToRelativePositionCommand {
   id: MessageType.MotorRunToRelativePositionCommand;
@@ -339,22 +314,14 @@ export interface MotorRunToRelativePositionCommand {
   position: number;
 }
 
-export interface MotorRunToRelativePositionResult {
-  id: MessageType.MotorRunToRelativePositionResult;
-  motorBitMask: MotorBits;
-  status: CommandStatus;
-}
+export type MotorRunToRelativePositionResult = MotorCommandResult<MessageType.MotorRunToRelativePositionResult>;
 
 export interface MotorStopCommand {
   id: MessageType.MotorStopCommand;
   motorBitMask: MotorBits;
 }
 
-export interface MotorStopResult {
-  id: MessageType.MotorStopResult;
-  motorBitMask: MotorBits;
-  status: CommandStatus;
-}
+export type MotorStopResult = MotorCommandResult<MessageType.MotorStopResult>;
 
 export interface MotorSetEndStateCommand {
   id: MessageType.MotorSetEndStateCommand;
@@ -362,11 +329,7 @@ export interface MotorSetEndStateCommand {
   endState: MotorEndState;
 }
 
-export interface MotorSetEndStateResult {
-  id: MessageType.MotorSetEndStateResult;
-  motorBitMask: MotorBits;
-  status: CommandStatus;
-}
+export type MotorSetEndStateResult = MotorCommandResult<MessageType.MotorSetEndStateResult>;
 
 export interface MotorSetAccelerationCommand {
   id: MessageType.MotorSetAccelerationCommand;
@@ -375,11 +338,7 @@ export interface MotorSetAccelerationCommand {
   deceleration: number;
 }
 
-export interface MotorSetAccelerationResult {
-  id: MessageType.MotorSetAccelerationResult;
-  motorBitMask: MotorBits;
-  status: CommandStatus;
-}
+export type MotorSetAccelerationResult = MotorCommandResult<MessageType.MotorSetAccelerationResult>;
 
 export interface LightColorCommand {
   id: MessageType.LightColorCommand;
@@ -387,10 +346,7 @@ export interface LightColorCommand {
   pattern: LightPattern;
 }
 
-export interface LightColorResult {
-  id: MessageType.LightColorResult;
-  status: CommandStatus;
-}
+export type LightColorResult = CommandStatusResult<MessageType.LightColorResult>;
 
 export interface BeepCommand {
   id: MessageType.BeepCommand;
@@ -398,29 +354,20 @@ export interface BeepCommand {
   duration: number;
 }
 
-export interface BeepResult {
-  id: MessageType.BeepResult;
-  status: CommandStatus;
-}
+export type BeepResult = CommandStatusResult<MessageType.BeepResult>;
 
 export interface StopSoundCommand {
   id: MessageType.StopSoundCommand;
 }
 
-export interface StopSoundResult {
-  id: MessageType.StopSoundResult;
-  status: CommandStatus;
-}
+export type StopSoundResult = CommandStatusResult<MessageType.StopSoundResult>;
 
 export interface MovementMoveCommand {
   id: MessageType.MovementMoveCommand;
   direction: MovementDirection;
 }
 
-export interface MovementMoveResult {
-  id: MessageType.MovementMoveResult;
-  status: CommandStatus;
-}
+export type MovementMoveResult = CommandStatusResult<MessageType.MovementMoveResult>;
 
 export interface MovementMoveForTimeCommand {
   id: MessageType.MovementMoveForTimeCommand;
@@ -428,10 +375,7 @@ export interface MovementMoveForTimeCommand {
   direction: MovementDirection;
 }
 
-export interface MovementMoveForTimeResult {
-  id: MessageType.MovementMoveForTimeResult;
-  status: CommandStatus;
-}
+export type MovementMoveForTimeResult = CommandStatusResult<MessageType.MovementMoveForTimeResult>;
 
 export interface MovementMoveForDegreesCommand {
   id: MessageType.MovementMoveForDegreesCommand;
@@ -439,10 +383,7 @@ export interface MovementMoveForDegreesCommand {
   direction: MovementDirection;
 }
 
-export interface MovementMoveForDegreesResult {
-  id: MessageType.MovementMoveForDegreesResult;
-  status: CommandStatus;
-}
+export type MovementMoveForDegreesResult = CommandStatusResult<MessageType.MovementMoveForDegreesResult>;
 
 export interface MovementMoveTankCommand {
   id: MessageType.MovementMoveTankCommand;
@@ -450,10 +391,7 @@ export interface MovementMoveTankCommand {
   speedRight: number;
 }
 
-export interface MovementMoveTankResult {
-  id: MessageType.MovementMoveTankResult;
-  status: CommandStatus;
-}
+export type MovementMoveTankResult = CommandStatusResult<MessageType.MovementMoveTankResult>;
 
 export interface MovementMoveTankForTimeCommand {
   id: MessageType.MovementMoveTankForTimeCommand;
@@ -462,10 +400,7 @@ export interface MovementMoveTankForTimeCommand {
   speedRight: number;
 }
 
-export interface MovementMoveTankForTimeResult {
-  id: MessageType.MovementMoveTankForTimeResult;
-  status: CommandStatus;
-}
+export type MovementMoveTankForTimeResult = CommandStatusResult<MessageType.MovementMoveTankForTimeResult>;
 
 export interface MovementMoveTankForDegreesCommand {
   id: MessageType.MovementMoveTankForDegreesCommand;
@@ -474,39 +409,27 @@ export interface MovementMoveTankForDegreesCommand {
   speedRight: number;
 }
 
-export interface MovementMoveTankForDegreesResult {
-  id: MessageType.MovementMoveTankForDegreesResult;
-  status: CommandStatus;
-}
+export type MovementMoveTankForDegreesResult = CommandStatusResult<MessageType.MovementMoveTankForDegreesResult>;
 
 export interface MovementStopCommand {
   id: MessageType.MovementStopCommand;
 }
 
-export interface MovementStopResult {
-  id: MessageType.MovementStopResult;
-  status: CommandStatus;
-}
+export type MovementStopResult = CommandStatusResult<MessageType.MovementStopResult>;
 
 export interface MovementSetSpeedCommand {
   id: MessageType.MovementSetSpeedCommand;
   speed: number;
 }
 
-export interface MovementSetSpeedResult {
-  id: MessageType.MovementSetSpeedResult;
-  status: CommandStatus;
-}
+export type MovementSetSpeedResult = CommandStatusResult<MessageType.MovementSetSpeedResult>;
 
 export interface MovementSetEndStateCommand {
   id: MessageType.MovementSetEndStateCommand;
   endState: MotorEndState;
 }
 
-export interface MovementSetEndStateResult {
-  id: MessageType.MovementSetEndStateResult;
-  status: CommandStatus;
-}
+export type MovementSetEndStateResult = CommandStatusResult<MessageType.MovementSetEndStateResult>;
 
 export interface MovementSetAccelerationCommand {
   id: MessageType.MovementSetAccelerationCommand;
@@ -514,40 +437,28 @@ export interface MovementSetAccelerationCommand {
   deceleration: number;
 }
 
-export interface MovementSetAccelerationResult {
-  id: MessageType.MovementSetAccelerationResult;
-  status: CommandStatus;
-}
+export type MovementSetAccelerationResult = CommandStatusResult<MessageType.MovementSetAccelerationResult>;
 
 export interface MovementSetTurnSteeringCommand {
   id: MessageType.MovementSetTurnSteeringCommand;
   steering: number;
 }
 
-export interface MovementSetTurnSteeringResult {
-  id: MessageType.MovementSetTurnSteeringResult;
-  status: CommandStatus;
-}
+export type MovementSetTurnSteeringResult = CommandStatusResult<MessageType.MovementSetTurnSteeringResult>;
 
 export interface ImuSetYawFaceCommand {
   id: MessageType.ImuSetYawFaceCommand;
   yawFace: HubFace;
 }
 
-export interface ImuSetYawFaceResult {
-  id: MessageType.ImuSetYawFaceResult;
-  status: CommandStatus;
-}
+export type ImuSetYawFaceResult = CommandStatusResult<MessageType.ImuSetYawFaceResult>;
 
 export interface ImuResetYawAxisCommand {
   id: MessageType.ImuResetYawAxisCommand;
   value: number;
 }
 
-export interface ImuResetYawAxisResult {
-  id: MessageType.ImuResetYawAxisResult;
-  status: CommandStatus;
-}
+export type ImuResetYawAxisResult = CommandStatusResult<MessageType.ImuResetYawAxisResult>;
 
 export type CoralCommand =
   | InfoRequest
@@ -618,7 +529,23 @@ export type CoralIncomingMessage =
   | ImuResetYawAxisResult
   | DeviceNotificationMessage;
 
+type MotorStatusMessage =
+  | MotorResetRelativePositionResult
+  | MotorSetSpeedResult
+  | MotorRunResult
+  | MotorSetDutyCycleResult
+  | MotorRunForDegreesResult
+  | MotorRunForTimeResult
+  | MotorRunToAbsolutePositionResult
+  | MotorRunToRelativePositionResult
+  | MotorStopResult
+  | MotorSetEndStateResult
+  | MotorSetAccelerationResult;
+
 type StatusOnlyMessage =
+  | LightColorResult
+  | BeepResult
+  | StopSoundResult
   | MovementMoveResult
   | MovementMoveForTimeResult
   | MovementMoveForDegreesResult
@@ -632,6 +559,42 @@ type StatusOnlyMessage =
   | MovementSetTurnSteeringResult
   | ImuSetYawFaceResult
   | ImuResetYawAxisResult;
+
+const MOTOR_STATUS_RESULT_IDS: readonly MotorStatusMessage["id"][] = [
+  MessageType.MotorResetRelativePositionResult,
+  MessageType.MotorSetSpeedResult,
+  MessageType.MotorRunResult,
+  MessageType.MotorSetDutyCycleResult,
+  MessageType.MotorRunForDegreesResult,
+  MessageType.MotorRunForTimeResult,
+  MessageType.MotorRunToAbsolutePositionResult,
+  MessageType.MotorRunToRelativePositionResult,
+  MessageType.MotorStopResult,
+  MessageType.MotorSetEndStateResult,
+  MessageType.MotorSetAccelerationResult
+];
+
+const STATUS_ONLY_RESULT_IDS: readonly StatusOnlyMessage["id"][] = [
+  MessageType.LightColorResult,
+  MessageType.BeepResult,
+  MessageType.StopSoundResult,
+  MessageType.MovementMoveResult,
+  MessageType.MovementMoveForTimeResult,
+  MessageType.MovementMoveForDegreesResult,
+  MessageType.MovementMoveTankResult,
+  MessageType.MovementMoveTankForTimeResult,
+  MessageType.MovementMoveTankForDegreesResult,
+  MessageType.MovementStopResult,
+  MessageType.MovementSetSpeedResult,
+  MessageType.MovementSetEndStateResult,
+  MessageType.MovementSetAccelerationResult,
+  MessageType.MovementSetTurnSteeringResult,
+  MessageType.ImuSetYawFaceResult,
+  MessageType.ImuResetYawAxisResult
+];
+
+const MOTOR_STATUS_RESULT_SET = new Set<number>(MOTOR_STATUS_RESULT_IDS);
+const STATUS_ONLY_RESULT_SET = new Set<number>(STATUS_ONLY_RESULT_IDS);
 
 export type DeviceNotificationMessage = {
   id: MessageType.DeviceNotification;
@@ -760,64 +723,68 @@ const RESULT_TO_COMMAND: Record<number, MessageType> = {
   [MessageType.ImuResetYawAxisResult]: MessageType.ImuResetYawAxisCommand
 };
 
+function buildCommand<T extends MessageType, P extends object = Record<string, never>>(id: T, payload?: P): { id: T } & P {
+  return (payload ? { id, ...payload } : { id }) as { id: T } & P;
+}
+
 export function createInfoRequest(): InfoRequest {
-  return { id: MessageType.InfoRequest };
+  return buildCommand(MessageType.InfoRequest);
 }
 
 export function createErrorReportRequest(): ErrorReportRequest {
-  return { id: MessageType.ErrorReportRequest };
+  return buildCommand(MessageType.ErrorReportRequest);
 }
 
 export function createBeginFirmwareUpdateRequest(productGroupDevice: ProductGroupDevice): BeginFirmwareUpdateRequest {
-  return { id: MessageType.BeginFirmwareUpdateRequest, productGroupDevice };
+  return buildCommand(MessageType.BeginFirmwareUpdateRequest, { productGroupDevice });
 }
 
 export function createDeviceUuidRequest(): DeviceUuidRequest {
-  return { id: MessageType.DeviceUuidRequest };
+  return buildCommand(MessageType.DeviceUuidRequest);
 }
 
 export function createDeviceNotificationRequest(delay: number): DeviceNotificationRequest {
-  return { id: MessageType.DeviceNotificationRequest, delay };
+  return buildCommand(MessageType.DeviceNotificationRequest, { delay });
 }
 
 export function createLightColorCommand(color: LegoColor, pattern: LightPattern): LightColorCommand {
-  return { id: MessageType.LightColorCommand, color, pattern };
+  return buildCommand(MessageType.LightColorCommand, { color, pattern });
 }
 
 export function createBeepCommand(frequency: number, duration: number): BeepCommand {
-  return { id: MessageType.BeepCommand, frequency, duration };
+  return buildCommand(MessageType.BeepCommand, { frequency, duration });
 }
 
 export function createStopSoundCommand(): StopSoundCommand {
-  return { id: MessageType.StopSoundCommand };
+  return buildCommand(MessageType.StopSoundCommand);
 }
 
 export function createMotorSetSpeedCommand(
   motorBitMask: MotorBits,
   speed: number
 ): MotorSetSpeedCommand {
-  return { id: MessageType.MotorSetSpeedCommand, motorBitMask, speed };
+  return buildCommand(MessageType.MotorSetSpeedCommand, { motorBitMask, speed });
 }
 
 export function createMotorSetDutyCycleCommand(
   motorBitMask: MotorBits,
   dutyCycle: number
 ): MotorSetDutyCycleCommand {
-  return { id: MessageType.MotorSetDutyCycleCommand, motorBitMask, dutyCycle };
+  return buildCommand(MessageType.MotorSetDutyCycleCommand, { motorBitMask, dutyCycle });
 }
 
 export function createMotorRunCommand(
   motorBitMask: MotorBits,
   direction: MotorMoveDirection
 ): MotorRunCommand {
-  return { id: MessageType.MotorRunCommand, motorBitMask, direction };
+  return buildCommand(MessageType.MotorRunCommand, { motorBitMask, direction });
 }
 
 export function createMotorResetRelativePositionCommand(
   motorBitMask: MotorBits,
   position: number
 ): MotorResetRelativePositionCommand {
-  return { id: MessageType.MotorResetRelativePositionCommand, motorBitMask, position };
+  return buildCommand(MessageType.MotorResetRelativePositionCommand, { motorBitMask, position });
 }
 
 export function createMotorRunForDegreesCommand(
@@ -825,7 +792,7 @@ export function createMotorRunForDegreesCommand(
   degrees: number,
   direction: MotorMoveDirection
 ): MotorRunForDegreesCommand {
-  return { id: MessageType.MotorRunForDegreesCommand, motorBitMask, degrees, direction };
+  return buildCommand(MessageType.MotorRunForDegreesCommand, { motorBitMask, degrees, direction });
 }
 
 export function createMotorRunForTimeCommand(
@@ -833,7 +800,7 @@ export function createMotorRunForTimeCommand(
   time: number,
   direction: MotorMoveDirection
 ): MotorRunForTimeCommand {
-  return { id: MessageType.MotorRunForTimeCommand, motorBitMask, time, direction };
+  return buildCommand(MessageType.MotorRunForTimeCommand, { motorBitMask, time, direction });
 }
 
 export function createMotorRunToAbsolutePositionCommand(
@@ -841,25 +808,25 @@ export function createMotorRunToAbsolutePositionCommand(
   position: number,
   direction: MotorMoveDirection
 ): MotorRunToAbsolutePositionCommand {
-  return { id: MessageType.MotorRunToAbsolutePositionCommand, motorBitMask, position, direction };
+  return buildCommand(MessageType.MotorRunToAbsolutePositionCommand, { motorBitMask, position, direction });
 }
 
 export function createMotorRunToRelativePositionCommand(
   motorBitMask: MotorBits,
   position: number
 ): MotorRunToRelativePositionCommand {
-  return { id: MessageType.MotorRunToRelativePositionCommand, motorBitMask, position };
+  return buildCommand(MessageType.MotorRunToRelativePositionCommand, { motorBitMask, position });
 }
 
 export function createMotorStopCommand(motorBitMask: MotorBits): MotorStopCommand {
-  return { id: MessageType.MotorStopCommand, motorBitMask };
+  return buildCommand(MessageType.MotorStopCommand, { motorBitMask });
 }
 
 export function createMotorSetEndStateCommand(
   motorBitMask: MotorBits,
   endState: MotorEndState
 ): MotorSetEndStateCommand {
-  return { id: MessageType.MotorSetEndStateCommand, motorBitMask, endState };
+  return buildCommand(MessageType.MotorSetEndStateCommand, { motorBitMask, endState });
 }
 
 export function createMotorSetAccelerationCommand(
@@ -867,32 +834,32 @@ export function createMotorSetAccelerationCommand(
   acceleration: number,
   deceleration: number
 ): MotorSetAccelerationCommand {
-  return { id: MessageType.MotorSetAccelerationCommand, motorBitMask, acceleration, deceleration };
+  return buildCommand(MessageType.MotorSetAccelerationCommand, { motorBitMask, acceleration, deceleration });
 }
 
 export function createMovementMoveCommand(direction: MovementDirection): MovementMoveCommand {
-  return { id: MessageType.MovementMoveCommand, direction };
+  return buildCommand(MessageType.MovementMoveCommand, { direction });
 }
 
 export function createMovementMoveForTimeCommand(
   time: number,
   direction: MovementDirection
 ): MovementMoveForTimeCommand {
-  return { id: MessageType.MovementMoveForTimeCommand, time, direction };
+  return buildCommand(MessageType.MovementMoveForTimeCommand, { time, direction });
 }
 
 export function createMovementMoveForDegreesCommand(
   degrees: number,
   direction: MovementDirection
 ): MovementMoveForDegreesCommand {
-  return { id: MessageType.MovementMoveForDegreesCommand, degrees, direction };
+  return buildCommand(MessageType.MovementMoveForDegreesCommand, { degrees, direction });
 }
 
 export function createMovementMoveTankCommand(
   speedLeft: number,
   speedRight: number
 ): MovementMoveTankCommand {
-  return { id: MessageType.MovementMoveTankCommand, speedLeft, speedRight };
+  return buildCommand(MessageType.MovementMoveTankCommand, { speedLeft, speedRight });
 }
 
 export function createMovementMoveTankForTimeCommand(
@@ -900,7 +867,7 @@ export function createMovementMoveTankForTimeCommand(
   speedLeft: number,
   speedRight: number
 ): MovementMoveTankForTimeCommand {
-  return { id: MessageType.MovementMoveTankForTimeCommand, time, speedLeft, speedRight };
+  return buildCommand(MessageType.MovementMoveTankForTimeCommand, { time, speedLeft, speedRight });
 }
 
 export function createMovementMoveTankForDegreesCommand(
@@ -908,157 +875,155 @@ export function createMovementMoveTankForDegreesCommand(
   speedLeft: number,
   speedRight: number
 ): MovementMoveTankForDegreesCommand {
-  return { id: MessageType.MovementMoveTankForDegreesCommand, degrees, speedLeft, speedRight };
+  return buildCommand(MessageType.MovementMoveTankForDegreesCommand, { degrees, speedLeft, speedRight });
 }
 
 export function createMovementStopCommand(): MovementStopCommand {
-  return { id: MessageType.MovementStopCommand };
+  return buildCommand(MessageType.MovementStopCommand);
 }
 
 export function createMovementSetSpeedCommand(speed: number): MovementSetSpeedCommand {
-  return { id: MessageType.MovementSetSpeedCommand, speed };
+  return buildCommand(MessageType.MovementSetSpeedCommand, { speed });
 }
 
 export function createMovementSetEndStateCommand(endState: MotorEndState): MovementSetEndStateCommand {
-  return { id: MessageType.MovementSetEndStateCommand, endState };
+  return buildCommand(MessageType.MovementSetEndStateCommand, { endState });
 }
 
 export function createMovementSetAccelerationCommand(
   acceleration: number,
   deceleration: number
 ): MovementSetAccelerationCommand {
-  return { id: MessageType.MovementSetAccelerationCommand, acceleration, deceleration };
+  return buildCommand(MessageType.MovementSetAccelerationCommand, { acceleration, deceleration });
 }
 
 export function createMovementSetTurnSteeringCommand(steering: number): MovementSetTurnSteeringCommand {
-  return { id: MessageType.MovementSetTurnSteeringCommand, steering };
+  return buildCommand(MessageType.MovementSetTurnSteeringCommand, { steering });
 }
 
 export function createImuSetYawFaceCommand(yawFace: HubFace): ImuSetYawFaceCommand {
-  return { id: MessageType.ImuSetYawFaceCommand, yawFace };
+  return buildCommand(MessageType.ImuSetYawFaceCommand, { yawFace });
 }
 
 export function createImuResetYawAxisCommand(value: number): ImuResetYawAxisCommand {
-  return { id: MessageType.ImuResetYawAxisCommand, value };
+  return buildCommand(MessageType.ImuResetYawAxisCommand, { value });
 }
+
+type NumericFieldType = "uint8" | "int8" | "uint16" | "int16" | "uint32" | "int32";
+type CommandField = { key: string; type: NumericFieldType };
+type CommandSchema = readonly CommandField[];
+
+const FIELD_WRITERS: Record<NumericFieldType, (target: number[], value: number) => void> = {
+  uint8: pushUint8,
+  int8: pushInt8,
+  uint16: pushUint16,
+  int16: pushInt16,
+  uint32: pushUint32,
+  int32: pushInt32
+};
+
+const COMMAND_SCHEMAS: Partial<Record<MessageType, CommandSchema>> = {
+  [MessageType.BeginFirmwareUpdateRequest]: [{ key: "productGroupDevice", type: "uint16" }],
+  [MessageType.DeviceNotificationRequest]: [{ key: "delay", type: "uint16" }],
+  [MessageType.LightColorCommand]: [
+    { key: "color", type: "int8" },
+    { key: "pattern", type: "uint8" }
+  ],
+  [MessageType.BeepCommand]: [
+    { key: "frequency", type: "uint16" },
+    { key: "duration", type: "uint32" }
+  ],
+  [MessageType.MotorSetSpeedCommand]: [
+    { key: "motorBitMask", type: "uint8" },
+    { key: "speed", type: "int8" }
+  ],
+  [MessageType.MotorSetDutyCycleCommand]: [
+    { key: "motorBitMask", type: "uint8" },
+    { key: "dutyCycle", type: "int16" }
+  ],
+  [MessageType.MotorRunCommand]: [
+    { key: "motorBitMask", type: "uint8" },
+    { key: "direction", type: "uint8" }
+  ],
+  [MessageType.MotorResetRelativePositionCommand]: [
+    { key: "motorBitMask", type: "uint8" },
+    { key: "position", type: "int32" }
+  ],
+  [MessageType.MotorRunForDegreesCommand]: [
+    { key: "motorBitMask", type: "uint8" },
+    { key: "degrees", type: "int32" },
+    { key: "direction", type: "uint8" }
+  ],
+  [MessageType.MotorRunForTimeCommand]: [
+    { key: "motorBitMask", type: "uint8" },
+    { key: "time", type: "uint32" },
+    { key: "direction", type: "uint8" }
+  ],
+  [MessageType.MotorRunToAbsolutePositionCommand]: [
+    { key: "motorBitMask", type: "uint8" },
+    { key: "position", type: "uint16" },
+    { key: "direction", type: "uint8" }
+  ],
+  [MessageType.MotorRunToRelativePositionCommand]: [
+    { key: "motorBitMask", type: "uint8" },
+    { key: "position", type: "int32" }
+  ],
+  [MessageType.MotorStopCommand]: [{ key: "motorBitMask", type: "uint8" }],
+  [MessageType.MotorSetEndStateCommand]: [
+    { key: "motorBitMask", type: "uint8" },
+    { key: "endState", type: "int8" }
+  ],
+  [MessageType.MotorSetAccelerationCommand]: [
+    { key: "motorBitMask", type: "uint8" },
+    { key: "acceleration", type: "uint8" },
+    { key: "deceleration", type: "uint8" }
+  ],
+  [MessageType.MovementMoveCommand]: [{ key: "direction", type: "uint8" }],
+  [MessageType.MovementMoveForTimeCommand]: [
+    { key: "time", type: "uint32" },
+    { key: "direction", type: "uint8" }
+  ],
+  [MessageType.MovementMoveForDegreesCommand]: [
+    { key: "degrees", type: "int32" },
+    { key: "direction", type: "uint8" }
+  ],
+  [MessageType.MovementMoveTankCommand]: [
+    { key: "speedLeft", type: "int8" },
+    { key: "speedRight", type: "int8" }
+  ],
+  [MessageType.MovementMoveTankForTimeCommand]: [
+    { key: "time", type: "uint32" },
+    { key: "speedLeft", type: "int8" },
+    { key: "speedRight", type: "int8" }
+  ],
+  [MessageType.MovementMoveTankForDegreesCommand]: [
+    { key: "degrees", type: "int32" },
+    { key: "speedLeft", type: "int8" },
+    { key: "speedRight", type: "int8" }
+  ],
+  [MessageType.MovementSetSpeedCommand]: [{ key: "speed", type: "int8" }],
+  [MessageType.MovementSetEndStateCommand]: [{ key: "endState", type: "int8" }],
+  [MessageType.MovementSetAccelerationCommand]: [
+    { key: "acceleration", type: "uint8" },
+    { key: "deceleration", type: "uint8" }
+  ],
+  [MessageType.MovementSetTurnSteeringCommand]: [{ key: "steering", type: "int8" }],
+  [MessageType.ImuSetYawFaceCommand]: [{ key: "yawFace", type: "uint8" }],
+  [MessageType.ImuResetYawAxisCommand]: [{ key: "value", type: "int16" }]
+};
 
 export function encodeMessage(message: CoralCommand): Buffer {
   const bytes: number[] = [message.id];
-  switch (message.id) {
-    case MessageType.InfoRequest:
-    case MessageType.ErrorReportRequest:
-    case MessageType.DeviceUuidRequest:
-    case MessageType.StopSoundCommand:
-    case MessageType.MovementStopCommand:
-      break;
-    case MessageType.BeginFirmwareUpdateRequest:
-      pushUint16(bytes, message.productGroupDevice);
-      break;
-    case MessageType.DeviceNotificationRequest:
-      pushUint16(bytes, message.delay);
-      break;
-    case MessageType.LightColorCommand:
-      pushInt8(bytes, message.color);
-      pushUint8(bytes, message.pattern);
-      break;
-    case MessageType.BeepCommand:
-      pushUint16(bytes, message.frequency);
-      pushUint32(bytes, message.duration);
-      break;
-    case MessageType.MotorSetSpeedCommand:
-      bytes.push(message.motorBitMask);
-      pushInt8(bytes, message.speed);
-      break;
-    case MessageType.MotorSetDutyCycleCommand:
-      bytes.push(message.motorBitMask);
-      pushInt16(bytes, message.dutyCycle);
-      break;
-    case MessageType.MotorRunCommand:
-      bytes.push(message.motorBitMask);
-      bytes.push(message.direction);
-      break;
-    case MessageType.MotorResetRelativePositionCommand:
-      bytes.push(message.motorBitMask);
-      pushInt32(bytes, message.position);
-      break;
-    case MessageType.MotorRunForDegreesCommand:
-      bytes.push(message.motorBitMask);
-      pushInt32(bytes, message.degrees);
-      bytes.push(message.direction);
-      break;
-    case MessageType.MotorRunForTimeCommand:
-      bytes.push(message.motorBitMask);
-      pushUint32(bytes, message.time);
-      bytes.push(message.direction);
-      break;
-    case MessageType.MotorRunToAbsolutePositionCommand:
-      bytes.push(message.motorBitMask);
-      pushUint16(bytes, message.position);
-      bytes.push(message.direction);
-      break;
-    case MessageType.MotorRunToRelativePositionCommand:
-      bytes.push(message.motorBitMask);
-      pushInt32(bytes, message.position);
-      break;
-    case MessageType.MotorStopCommand:
-      bytes.push(message.motorBitMask);
-      break;
-    case MessageType.MotorSetEndStateCommand:
-      bytes.push(message.motorBitMask);
-      pushInt8(bytes, message.endState);
-      break;
-    case MessageType.MotorSetAccelerationCommand:
-      bytes.push(message.motorBitMask);
-      pushUint8(bytes, message.acceleration);
-      pushUint8(bytes, message.deceleration);
-      break;
-    case MessageType.MovementMoveCommand:
-      bytes.push(message.direction);
-      break;
-    case MessageType.MovementMoveForTimeCommand:
-      pushUint32(bytes, message.time);
-      bytes.push(message.direction);
-      break;
-    case MessageType.MovementMoveForDegreesCommand:
-      pushInt32(bytes, message.degrees);
-      bytes.push(message.direction);
-      break;
-    case MessageType.MovementMoveTankCommand:
-      pushInt8(bytes, message.speedLeft);
-      pushInt8(bytes, message.speedRight);
-      break;
-    case MessageType.MovementMoveTankForTimeCommand:
-      pushUint32(bytes, message.time);
-      pushInt8(bytes, message.speedLeft);
-      pushInt8(bytes, message.speedRight);
-      break;
-    case MessageType.MovementMoveTankForDegreesCommand:
-      pushInt32(bytes, message.degrees);
-      pushInt8(bytes, message.speedLeft);
-      pushInt8(bytes, message.speedRight);
-      break;
-    case MessageType.MovementSetSpeedCommand:
-      pushInt8(bytes, message.speed);
-      break;
-    case MessageType.MovementSetEndStateCommand:
-      pushInt8(bytes, message.endState);
-      break;
-    case MessageType.MovementSetAccelerationCommand:
-      pushUint8(bytes, message.acceleration);
-      pushUint8(bytes, message.deceleration);
-      break;
-    case MessageType.MovementSetTurnSteeringCommand:
-      pushInt8(bytes, message.steering);
-      break;
-    case MessageType.ImuSetYawFaceCommand:
-      bytes.push(message.yawFace);
-      break;
-    case MessageType.ImuResetYawAxisCommand:
-      pushInt16(bytes, message.value);
-      break;
-    default: {
-      const exhaustive: never = message;
-      throw new Error("Unsupported command");
+  const schema = COMMAND_SCHEMAS[message.id];
+  if (schema) {
+    const numericMessage = message as unknown as Record<string, number | undefined>;
+    for (const field of schema) {
+      const writer = FIELD_WRITERS[field.type];
+      const value = numericMessage[field.key];
+      if (value === undefined) {
+        throw new Error(`Missing field "${field.key}" for ${MessageType[message.id]}.`);
+      }
+      writer(bytes, value);
     }
   }
   return Buffer.from(bytes);
@@ -1070,6 +1035,21 @@ export function decodeMessage(data: Buffer): CoralIncomingMessage | null {
   }
   const reader = new BufferReader(data);
   const id = reader.readUInt8();
+  if (MOTOR_STATUS_RESULT_SET.has(id)) {
+    const result: MotorStatusMessage = {
+      id: id as MotorStatusMessage["id"],
+      motorBitMask: reader.readUInt8() as MotorBits,
+      status: reader.readUInt8() as CommandStatus
+    };
+    return result;
+  }
+  if (STATUS_ONLY_RESULT_SET.has(id)) {
+    const result: StatusOnlyMessage = {
+      id: id as StatusOnlyMessage["id"],
+      status: reader.readUInt8() as CommandStatus
+    };
+    return result;
+  }
   switch (id) {
     case MessageType.InfoResponse:
       return {
@@ -1111,88 +1091,7 @@ export function decodeMessage(data: Buffer): CoralIncomingMessage | null {
     case MessageType.DeviceNotificationResponse:
       return {
         id,
-        status: reader.readUInt8()
-      };
-    case MessageType.LightColorResult:
-      return {
-        id,
-        status: reader.readUInt8() as CommandStatus
-      };
-    case MessageType.BeepResult:
-      return {
-        id,
-        status: reader.readUInt8() as CommandStatus
-      };
-    case MessageType.StopSoundResult:
-      return {
-        id,
-        status: reader.readUInt8() as CommandStatus
-      };
-    case MessageType.MotorResetRelativePositionResult:
-      return {
-        id,
-        motorBitMask: reader.readUInt8() as MotorBits,
-        status: reader.readUInt8() as CommandStatus
-      };
-    case MessageType.MotorSetSpeedResult:
-      return {
-        id,
-        motorBitMask: reader.readUInt8() as MotorBits,
-        status: reader.readUInt8() as CommandStatus
-      };
-    case MessageType.MotorSetDutyCycleResult:
-      return {
-        id,
-        motorBitMask: reader.readUInt8() as MotorBits,
-        status: reader.readUInt8() as CommandStatus
-      };
-    case MessageType.MotorRunResult:
-      return {
-        id,
-        motorBitMask: reader.readUInt8() as MotorBits,
-        status: reader.readUInt8() as CommandStatus
-      };
-    case MessageType.MotorRunForDegreesResult:
-      return {
-        id,
-        motorBitMask: reader.readUInt8() as MotorBits,
-        status: reader.readUInt8() as CommandStatus
-      };
-    case MessageType.MotorRunForTimeResult:
-      return {
-        id,
-        motorBitMask: reader.readUInt8() as MotorBits,
-        status: reader.readUInt8() as CommandStatus
-      };
-    case MessageType.MotorRunToAbsolutePositionResult:
-      return {
-        id,
-        motorBitMask: reader.readUInt8() as MotorBits,
-        status: reader.readUInt8() as CommandStatus
-      };
-    case MessageType.MotorRunToRelativePositionResult:
-      return {
-        id,
-        motorBitMask: reader.readUInt8() as MotorBits,
-        status: reader.readUInt8() as CommandStatus
-      };
-    case MessageType.MotorStopResult:
-      return {
-        id,
-        motorBitMask: reader.readUInt8() as MotorBits,
-        status: reader.readUInt8() as CommandStatus
-      };
-    case MessageType.MotorSetEndStateResult:
-      return {
-        id,
-        motorBitMask: reader.readUInt8() as MotorBits,
-        status: reader.readUInt8() as CommandStatus
-      };
-    case MessageType.MotorSetAccelerationResult:
-      return {
-        id,
-        motorBitMask: reader.readUInt8() as MotorBits,
-        status: reader.readUInt8() as CommandStatus
+        status: reader.readUInt8() as ResponseStatus
       };
     case MessageType.DeviceNotification:
       reader.readUInt16(); // reserved
@@ -1200,20 +1099,6 @@ export function decodeMessage(data: Buffer): CoralIncomingMessage | null {
         id,
         deviceData: decodeDeviceData(reader.readRemaining())
       };
-    case MessageType.MovementMoveResult:
-    case MessageType.MovementMoveForTimeResult:
-    case MessageType.MovementMoveForDegreesResult:
-    case MessageType.MovementMoveTankResult:
-    case MessageType.MovementMoveTankForTimeResult:
-    case MessageType.MovementMoveTankForDegreesResult:
-    case MessageType.MovementStopResult:
-    case MessageType.MovementSetSpeedResult:
-    case MessageType.MovementSetEndStateResult:
-    case MessageType.MovementSetAccelerationResult:
-    case MessageType.MovementSetTurnSteeringResult:
-    case MessageType.ImuSetYawFaceResult:
-    case MessageType.ImuResetYawAxisResult:
-      return createStatusOnlyMessage(id as StatusOnlyMessage["id"], reader.readUInt8() as CommandStatus);
     default:
       return null;
   }
@@ -1335,16 +1220,18 @@ function decodeDeviceData(buffer: Buffer): DeviceSensorPayload[] {
           gesture: payloadReader.readInt8()
         });
         break;
-      default:
-        payloadReader.skipRemaining();
-        return events;
+      default: {
+        while (payloadReader.remaining > 0) {
+          if (isDeviceMessageTypeValue(payloadReader.peekUInt8())) {
+            break;
+          }
+          payloadReader.readUInt8();
+        }
+        break;
+      }
     }
   }
   return events;
-}
-
-function createStatusOnlyMessage(id: StatusOnlyMessage["id"], status: CommandStatus): StatusOnlyMessage {
-  return { id, status } as StatusOnlyMessage;
 }
 
 export function getRequestKey(message: CoralCommand): string {
