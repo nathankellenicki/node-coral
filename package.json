@@ -1,7 +1,7 @@
 {
   "name": "node-coral",
-  "version": "0.1.0",
-  "description": "TypeScript helper library for LEGO Education Coral BLE devices using noble.",
+  "version": "1.0.0",
+  "description": "A JavaScript/TypeScript module for LEGO Education Science (\"Coral\") devices",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,20 +9,22 @@
     "build": "tsc -b",
     "clean": "rimraf dist",
     "prepare": "npm run build",
-    "test:e2e": "node scripts/run-tests-e2e.js",
-    "test:unit": "node scripts/run-tests-unit.js"
+    "prepublishOnly": "npm run build && npm run test",
+    "test": "node scripts/run-tests-unit.js"
   },
   "keywords": [
     "lego",
+    "education",
+    "legoeducation",
+    "legoeducationscience",
     "coral",
     "bluetooth",
-    "ble",
-    "noble"
+    "ble"
   ],
   "files": [
     "dist"
   ],
-  "author": "",
+  "author": "Nathan Kellenicki <nathan@kellenicki.com>",
   "dependencies": {
     "@stoprocent/noble": "^2.3.10",
     "debug": "^4.4.3"

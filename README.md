@@ -7,30 +7,28 @@ LEGO Education Science ("Coral") introduces a compact family of Bluetooth Low En
 ### Sample Usage
 
 ```javascript
-const { Coral, SingleMotorDevice, DoubleMotorDevice } = require("node-coral");
+import { Coral, SingleMotorDevice, DoubleMotorDevice } from "node-coral";
 
 const coral = new Coral();
 
 coral.on("discover", async (device) => { // Wait to discover a device
-  console.log(`Discovered ${device.info.name ?? device.info.uuid}!`);
-  coral.stop(); // Stop scanning once we connect
-
   if (device instanceof SingleMotorDevice) {
+    console.log(
+      `Discovered ${device.info.name} / ${device.info.uuid} (color=${device.info.color ?? "n/a"} tag=${device.info.tag ?? "n/a"})`
+    );
+    coral.stop(); // Stop scanning once we discover an eligible device
+    await device.connect();
+
     await device.setMotorSpeed(50);
     await device.runMotorForDegrees(720, "Cw");
     await device.runMotorForDegrees(720, "Ccw");
-  } else if (device instanceof DoubleMotorDevice) {
-    await device.setMovementSpeed(40);
-    await device.moveForDegrees(360, "Forward");
-    await device.moveForDegrees(360, "Backward");
-  } else {
-    console.log("This example only controls motor devices.");
-    device.disconnect();
+
   }
 });
 
 coral.scan(); // Start scanning for Coral devices
 console.log("Scanning for Coral devices...");
+
 ``` 
 
 ### Node.js Installation
