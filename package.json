@@ -24,9 +24,11 @@
   ],
   "author": "",
   "dependencies": {
-    "@stoprocent/noble": "^2.3.10"
+    "@stoprocent/noble": "^2.3.10",
+    "debug": "^4.4.3"
   },
   "devDependencies": {
+    "@types/debug": "^4.1.12",
     "@types/node": "^25.0.0",
     "rimraf": "^6.1.2",
     "ts-node": "^10.9.2",

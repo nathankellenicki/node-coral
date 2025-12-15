@@ -1,4 +1,5 @@
 import { EventEmitter } from "events";
+import debug from "debug";
 import noble, { Characteristic, Peripheral, Service } from "@stoprocent/noble";
 import {
   CommandStatus,
@@ -26,7 +27,9 @@ import {
 
 export type NotificationListener = (payload: DeviceSensorPayload[]) => void;
 
-const DEFAULT_TIMEOUT_MS = 3_000;
+const DEFAULT_TIMEOUT_MS = 30_000;
+const log = debug("node-coral:connection");
+const logRaw = debug("node-coral:connection:raw");
 
 type PendingRequest = {
   resolve: (msg: CoralIncomingMessage) => void;
@@ -88,6 +91,7 @@ export class CoralConnection extends EventEmitter {
       this.pending.set(key, queue);
     });
 
+    log("sending command %s (%s) params=%o", formatMessageName(command.id), key, getMessageParams(command));
     await writeWithoutResponse(this.writeChar, encodeMessage(command));
     return messagePromise;
   }
@@ -113,6 +117,7 @@ export class CoralConnection extends EventEmitter {
   }
 
   private handleIncoming(raw: Buffer): void {
+    logRaw("rx %s", raw.toString("hex"));
     const parsed = decodeMessage(raw);
     if (!parsed) {
       return;
@@ -124,6 +129,7 @@ export class CoralConnection extends EventEmitter {
       const request = pendingQueue.shift();
       if (request) {
         try {
+          log("received response %s (%s) params=%o", formatMessageName(parsed.id), responseKey, getMessageParams(parsed));
           this.ensureSuccess(parsed);
           request.resolve(parsed);
         } catch (error) {
@@ -138,8 +144,10 @@ export class CoralConnection extends EventEmitter {
 
     if (parsed.id === MessageType.DeviceNotification) {
       const notification = parsed as DeviceNotificationMessage;
+      log("received notification %s params=%o", formatMessageName(parsed.id), getMessageParams(notification));
       notification.deviceData.forEach((payload) => this.emit("notification", [payload]));
     } else {
+      log("received message %s params=%o", formatMessageName(parsed.id), getMessageParams(parsed));
       this.emit("message", parsed);
     }
   }
@@ -258,6 +266,7 @@ async function subscribe(characteristic: Characteristic): Promise<void> {
 }
 
 async function writeWithoutResponse(characteristic: Characteristic, data: Buffer): Promise<void> {
+  logRaw("tx %s", data.toString("hex"));
   await new Promise<void>((resolve, reject) => {
     characteristic.write(data, true, (err) => {
       if (err) {
@@ -271,4 +280,18 @@ async function writeWithoutResponse(characteristic: Characteristic, data: Buffer
 
 function normalizeUuid(uuid: string): string {
   return uuid.replace(/-/g, "").toLowerCase();
+}
+
+function formatMessageName(id: MessageType): string {
+  return MessageType[id] ?? `${id}`;
+}
+
+function getMessageParams(message: CoralCommand | CoralIncomingMessage): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(message as Record<string, unknown>)) {
+    if (key !== "id") {
+      result[key] = value;
+    }
+  }
+  return result;
 }

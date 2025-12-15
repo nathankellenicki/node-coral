@@ -27,6 +27,10 @@ export abstract class CoralDevice extends EventEmitter {
     this.connection.disconnect();
   }
 
+  sleep(timeMs: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, timeMs));
+  }
+
   protected handleNotification(payload: DeviceSensorPayload[]): void {
     payload.forEach((item) => {
       this.emit("notification", item);
