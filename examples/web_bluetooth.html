@@ -8,7 +8,7 @@
   <script src="../dist/web/coral.min.js"></script>
 
   <script>
-    const { Coral: CoralClass, SingleMotorDevice, DoubleMotorDevice, ColorSensorDevice, LegoColor } = Coral;
+    const { Coral: CoralClass, SingleMotorDevice, ColorSensorDevice, LegoColor, CoralDeviceKind } = Coral;
 
     const logEl = document.getElementById("log");
     const scanButton = document.getElementById("scan");
@@ -18,8 +18,9 @@
 
     coral.on("discover", async (device) => {
 
+      // If a SingleMotorDevice was found, start the motor going back and forth
       if (device instanceof SingleMotorDevice) {
-        console.log(
+        log(
           `Discovered ${device.info.name ?? "n/a"} / ${device.info.uuid} (color=${device.info.color ?? "n/a"} tag=${device.info.tag ?? "n/a"})`
         );
         renderHub(device);
@@ -30,13 +31,14 @@
           await device.runMotorForDegrees(720, "Ccw");
         }
 
+      // If a ColorSensorDevice was found, print the colors that are seen
       } else if (device instanceof ColorSensorDevice) {
-        console.log(`Discovered color sensor ${device.info.name ?? "n/a"} / ${device.info.uuid}`);
+        log(`Discovered color sensor ${device.info.name ?? "n/a"} / ${device.info.uuid}`);
         renderHub(device);
         await device.connect();
         device.on("color", (payload) => {
           const colorName = LegoColor[payload.color] ?? "None";
-          console.log(`Color detected: id=${payload.color} (${colorName}) reflection=${payload.reflection}`);
+          log(`Color detected: id=${payload.color} (${colorName}) reflection=${payload.reflection}`);
           if (colorEl) {
             colorEl.style.backgroundColor = colorName === "None" ? "transparent" : colorName.toLowerCase();
           }
@@ -45,9 +47,10 @@
     });
 
     const renderHub = function (hub) {
+      const deviceType = CoralDeviceKind[hub.kind] ?? "UnknownDevice";
       const element = document.createElement("tr");
       element.setAttribute("id", `hub-${encodeURIComponent(hub.info.uuid)}`);
-      element.innerHTML = `<td>${hub.info.name}</td><td>Blah</td><td class="disconnect_btn"><a href="#" onclick="disconnect('${encodeURIComponent(hub.info.uuid)}');">Disconnect</a></td>`;
+      element.innerHTML = `<td>${hub.info.name}</td><td>${deviceType}</td><td class="disconnect_btn"><a href="#" onclick="disconnect('${encodeURIComponent(hub.info.uuid)}');">Disconnect</a></td>`;
       document.getElementById("hubs").appendChild(element);
     }
 
@@ -59,17 +62,23 @@
         if (element) {
           element.remove();
         }
-        console.log(`Disconnected from hub ${hub.info.name ?? "n/a"} / ${hub.info.uuid}`);
+        log(`Disconnected from hub ${hub.info.name ?? "n/a"} / ${hub.info.uuid}`);
       }
     }
 
     const scan = function () {
       if (CoralClass.isWebBluetooth) {
-      console.log("Scanning for Coral devices...");
-      coral.scan(); // Start scanning for hubs
+        log("Scanning for Coral devices...");
+        coral.scan(); // Start scanning for hubs
       } else {
-          alert("Your browser does not support the Web Bluetooth specification.");
+        alert("Your browser does not support the Web Bluetooth specification.");
       }
+    }
+
+    const log = function (str) {
+      const element = document.getElementById("console");
+      element.innerHTML += `${str}<br />`;
+      element.scrollTop = element.scrollHeight;
     }
 
   </script>

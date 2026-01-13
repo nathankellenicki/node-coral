@@ -148,7 +148,7 @@ export class Coral extends EventEmitter {
         return;
       }
       const identified = await this.identifyWebDevice(device);
-      const kind = identified?.kind ?? "SingleMotor";
+      const kind = identified?.kind ?? CoralDeviceKind.SingleMotor;
       const info = identified?.info ?? {
         ...(device.name ? { name: device.name } : {}),
         firmwareVersion: [0, 0, 0],
@@ -215,16 +215,16 @@ export class Coral extends EventEmitter {
 
 function createDeviceInstance(kind: CoralDeviceKind, connection: CoralConnection, info: CoralDeviceInfo): CoralDevice {
   switch (kind) {
-    case "SingleMotor":
+    case CoralDeviceKind.SingleMotor:
       return new SingleMotorDevice(connection, kind, info);
-    case "DoubleMotor":
+    case CoralDeviceKind.DoubleMotor:
       return new DoubleMotorDevice(connection, kind, info);
-    case "ColorSensor":
+    case CoralDeviceKind.ColorSensor:
       return new ColorSensorDevice(connection, kind, info);
-    case "Controller":
+    case CoralDeviceKind.Controller:
       return new ControllerDevice(connection, kind, info);
     default:
-      return new SingleMotorDevice(connection, kind, info);
+      return new SingleMotorDevice(connection, CoralDeviceKind.SingleMotor, info);
   }
 }
 
@@ -236,10 +236,10 @@ type AdvertisementDetails = {
 
 const LEGO_COMPANY_IDENTIFIER = 0x0397;
 const HARDWARE_KIND_MAP: Partial<Record<number, CoralDeviceKind>> = {
-  0: "SingleMotor",
-  1: "DoubleMotor",
-  2: "ColorSensor",
-  3: "Controller"
+  0: CoralDeviceKind.SingleMotor,
+  1: CoralDeviceKind.DoubleMotor,
+  2: CoralDeviceKind.ColorSensor,
+  3: CoralDeviceKind.Controller
 };
 
 function parseManufacturerData(peripheral: Peripheral): AdvertisementDetails | null {

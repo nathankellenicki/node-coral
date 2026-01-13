@@ -1251,13 +1251,13 @@ export function getResponseKey(message: CoralIncomingMessage): string {
 export function mapProductToKind(device: ProductGroupDevice): CoralDeviceKind | "unknown" {
   switch (device) {
     case ProductGroupDevice.CoralSingleMotor:
-      return "SingleMotor";
+      return CoralDeviceKind.SingleMotor;
     case ProductGroupDevice.CoralDualMotor:
-      return "DoubleMotor";
+      return CoralDeviceKind.DoubleMotor;
     case ProductGroupDevice.CoralColorSensor:
-      return "ColorSensor";
+      return CoralDeviceKind.ColorSensor;
     case ProductGroupDevice.CoralJoystick:
-      return "Controller";
+      return CoralDeviceKind.Controller;
     default:
       return "unknown";
   }
