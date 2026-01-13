@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "es2020",
+    "outDir": "dist/web",
+    "lib": ["es2020", "dom"],
+    "types": ["node"]
+  },
+  "include": ["src"]
+}

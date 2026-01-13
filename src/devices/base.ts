@@ -1,4 +1,4 @@
-import { EventEmitter } from "events";
+import { EventEmitter } from "../event-emitter";
 import { CoralDeviceKind, DEFAULT_NOTIFICATION_INTERVAL_MS } from "../constants";
 import { CoralConnection } from "../connection";
 import { DeviceSensorPayload, mapProductToKind } from "../protocol";

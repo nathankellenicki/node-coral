@@ -6,7 +6,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -b",
+    "build": "tsc -b && npm run build:web",
+    "build:web": "tsc -p tsconfig.web.json && node scripts/fix-web-imports.js",
     "clean": "rimraf dist",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build && npm run test",

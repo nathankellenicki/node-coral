@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Web Bluetooth node-coral Example</title>
+  <link rel="stylesheet" type="text/css" href="./web_bluetooth.css" />
+
+
+  <script type="module">
+    import { Coral, SingleMotorDevice, DoubleMotorDevice, ColorSensorDevice } from "../dist/web/index.js";
+
+    const logEl = document.getElementById("log");
+    const scanButton = document.getElementById("scan");
+
+    const log = (message) => {
+      logEl.textContent += `${message}\n`;
+      logEl.scrollTop = logEl.scrollHeight;
+      console.log(message);
+    };
+
+    const coral = new Coral();
+
+    coral.on("discover", async (device) => {
+      if (device instanceof SingleMotorDevice) {
+        log(
+          `Discovered ${device.info.name ?? "n/a"} / ${device.info.uuid} (color=${device.info.color ?? "n/a"} tag=${device.info.tag ?? "n/a"})`
+        );
+        coral.stop();
+        await device.connect();
+        await device.setMotorSpeed(50);
+        await device.runMotorForDegrees(720, "Cw");
+        await device.runMotorForDegrees(720, "Ccw");
+        log("Motor sequence complete.");
+      } else if (device instanceof ColorSensorDevice) {
+        log(`Discovered color sensor ${device.info.name ?? "n/a"} / ${device.info.uuid}`);
+        await device.connect();
+        device.on("color", (payload) => {
+          log(`Color detected: id=${payload.color} reflection=${payload.reflection}`);
+        });
+      } else if (device instanceof DoubleMotorDevice) {
+        log(`Discovered double motor ${device.info.name ?? "n/a"} / ${device.info.uuid}`);
+      } else {
+        log(`Discovered device ${device.info.name ?? "n/a"} / ${device.info.uuid}`);
+      }
+    });
+
+    scanButton.addEventListener("click", async () => {
+      log("Scanning for Coral devices...");
+      try {
+        await coral.scan();
+      } catch (error) {
+        log(`Scan failed: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    });
+  </script>
+
+  </script>
+</head>
+
+<body>
+  <div>
+    <h1>Web Bluetooth node-coral Example</h1>
+  </div>
+  <div>
+    <a class="button" href="#" onclick="scan();">Add new Hub</a>
+  </div>
+  <div id="current_color">
+    <span>Current Color: </span>
+    <div id="color">&nbsp;</div>
+  </div>
+  <div>
+    <table id="hubs">
+      <thead class="headings">
+        <td>Name</td>
+        <td>Type</td>
+      </thead>
+    </table>
+  </div>
+  <div id="console"></div>
+</body>
+
+</html>

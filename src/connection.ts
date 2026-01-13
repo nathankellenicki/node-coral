@@ -1,6 +1,7 @@
-import { EventEmitter } from "events";
-import debug from "debug";
-import noble, { Characteristic, Peripheral, Service } from "@stoprocent/noble";
+import type { Characteristic, Peripheral, Service } from "@stoprocent/noble";
+import { EventEmitter } from "./event-emitter";
+import { createDebug } from "./logger";
+import { WebBluetoothDevice, WebBluetoothEvent, WebBluetoothRemoteGATTCharacteristic } from "./web-bluetooth";
 import {
   CommandStatus,
   CoralCommand,
@@ -28,8 +29,8 @@ import {
 export type NotificationListener = (payload: DeviceSensorPayload[]) => void;
 
 const DEFAULT_TIMEOUT_MS = 30_000;
-const log = debug("node-coral:connection");
-const logRaw = debug("node-coral:connection:raw");
+const log = createDebug("node-coral:connection");
+const logRaw = createDebug("node-coral:connection:raw");
 
 type PendingRequest = {
   resolve: (msg: CoralIncomingMessage) => void;
@@ -38,16 +39,34 @@ type PendingRequest = {
 };
 
 export class CoralConnection extends EventEmitter {
-  private writeChar?: Characteristic;
-  private notifyChar?: Characteristic;
+  private writeChar?: Characteristic | WebBluetoothRemoteGATTCharacteristic;
+  private notifyChar?: Characteristic | WebBluetoothRemoteGATTCharacteristic;
   private readonly pending = new Map<string, PendingRequest[]>();
-  private readonly handleDataBound = (data: Buffer) => this.handleIncoming(data);
+  private readonly handleDataBound = (data: Uint8Array) => this.handleIncoming(data);
+  private readonly handleWebNotificationBound = (event: WebBluetoothEvent) => {
+    const target = event.target as WebBluetoothRemoteGATTCharacteristic | null;
+    const value = target?.value;
+    if (!value) {
+      return;
+    }
+    const data = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+    this.handleIncoming(data);
+  };
+  private isOpen = false;
 
-  constructor(public readonly peripheral: Peripheral) {
+  constructor(public readonly peripheral: Peripheral | WebBluetoothDevice) {
     super();
   }
 
   async open(): Promise<void> {
+    if (this.isOpen) {
+      return;
+    }
+    if (isWebBluetoothDevice(this.peripheral)) {
+      await this.openWeb(this.peripheral);
+      this.isOpen = true;
+      return;
+    }
     await connectPeripheral(this.peripheral);
     const serviceIds = [normalizeUuid(CORAL_SERVICE_UUID)];
     const characteristicIds = [normalizeUuid(CORAL_WRITE_CHAR_UUID), normalizeUuid(CORAL_NOTIFY_CHAR_UUID)];
@@ -61,6 +80,21 @@ export class CoralConnection extends EventEmitter {
     this.notifyChar = notifyChar;
     this.notifyChar.on("data", this.handleDataBound);
     await subscribe(this.notifyChar);
+    this.isOpen = true;
+  }
+
+  private async openWeb(device: WebBluetoothDevice): Promise<void> {
+    if (!device.gatt) {
+      throw new Error("Bluetooth GATT is not available on this device");
+    }
+    const server = device.gatt.connected ? device.gatt : await device.gatt.connect();
+    const service = await server.getPrimaryService(CORAL_SERVICE_UUID);
+    const writeChar = await service.getCharacteristic(CORAL_WRITE_CHAR_UUID);
+    const notifyChar = await service.getCharacteristic(CORAL_NOTIFY_CHAR_UUID);
+    this.writeChar = writeChar;
+    this.notifyChar = notifyChar;
+    notifyChar.addEventListener("characteristicvaluechanged", this.handleWebNotificationBound);
+    await notifyChar.startNotifications();
   }
 
   async request<T extends CoralIncomingMessage = CoralIncomingMessage>(
@@ -107,17 +141,26 @@ export class CoralConnection extends EventEmitter {
 
   disconnect(): void {
     if (this.notifyChar) {
-      this.notifyChar.removeListener("data", this.handleDataBound);
+      if (isWebBluetoothCharacteristic(this.notifyChar)) {
+        this.notifyChar.removeEventListener("characteristicvaluechanged", this.handleWebNotificationBound);
+      } else {
+        this.notifyChar.removeListener("data", this.handleDataBound);
+      }
     }
-    this.peripheral.disconnect();
+    if (isWebBluetoothDevice(this.peripheral)) {
+      this.peripheral.gatt?.disconnect();
+    } else {
+      this.peripheral.disconnect();
+    }
+    this.isOpen = false;
     for (const [key] of this.pending) {
       this.rejectPending(key, new Error("Connection closed"));
     }
     this.pending.clear();
   }
 
-  private handleIncoming(raw: Buffer): void {
-    logRaw("rx %s", raw.toString("hex"));
+  private handleIncoming(raw: Uint8Array): void {
+    logRaw("rx %s", formatHex(raw));
     const parsed = decodeMessage(raw);
     if (!parsed) {
       return;
@@ -222,6 +265,16 @@ export function matchesCoralService(peripheral: Peripheral): boolean {
   return services.some((uuid) => normalizeUuid(uuid) === canonical || uuid.toLowerCase() === CORAL_SERVICE_SHORT);
 }
 
+function isWebBluetoothDevice(device: Peripheral | WebBluetoothDevice): device is WebBluetoothDevice {
+  return typeof (device as WebBluetoothDevice).gatt !== "undefined";
+}
+
+function isWebBluetoothCharacteristic(
+  characteristic: Characteristic | WebBluetoothRemoteGATTCharacteristic
+): characteristic is WebBluetoothRemoteGATTCharacteristic {
+  return typeof (characteristic as WebBluetoothRemoteGATTCharacteristic).startNotifications === "function";
+}
+
 async function connectPeripheral(peripheral: Peripheral): Promise<void> {
   if (peripheral.state === "connected") {
     return;
@@ -265,10 +318,18 @@ async function subscribe(characteristic: Characteristic): Promise<void> {
   });
 }
 
-async function writeWithoutResponse(characteristic: Characteristic, data: Buffer): Promise<void> {
-  logRaw("tx %s", data.toString("hex"));
+async function writeWithoutResponse(
+  characteristic: Characteristic | WebBluetoothRemoteGATTCharacteristic,
+  data: Uint8Array
+): Promise<void> {
+  logRaw("tx %s", formatHex(data));
+  if (isWebBluetoothCharacteristic(characteristic)) {
+    await characteristic.writeValueWithoutResponse(data);
+    return;
+  }
+  const payload = toNodeBuffer(data) as Buffer;
   await new Promise<void>((resolve, reject) => {
-    characteristic.write(data, true, (err) => {
+    characteristic.write(payload, true, (err) => {
       if (err) {
         reject(err);
       } else {
@@ -280,6 +341,17 @@ async function writeWithoutResponse(characteristic: Characteristic, data: Buffer
 
 function normalizeUuid(uuid: string): string {
   return uuid.replace(/-/g, "").toLowerCase();
+}
+
+function toNodeBuffer(data: Uint8Array): Buffer | Uint8Array {
+  if (typeof Buffer !== "undefined" && !(data instanceof Buffer)) {
+    return Buffer.from(data);
+  }
+  return data;
+}
+
+function formatHex(data: Uint8Array): string {
+  return Array.from(data, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 function formatMessageName(id: MessageType): string {
