@@ -29,10 +29,15 @@ type NobleAdapter = {
 export class Coral extends EventEmitter {
   private scanning = false;
   private readonly discovered = new Set<string>();
+  private readonly hubs = new Map<string, CoralDevice>();
   private readonly handleDiscoverBound = (peripheral: Peripheral) => {
     void this.handleDiscover(peripheral);
   };
   private adapter: NobleAdapter | undefined;
+
+  static get isWebBluetooth(): boolean {
+    return Boolean(getWebBluetooth());
+  }
 
   constructor(adapter?: NobleAdapter) {
     super();
@@ -70,6 +75,7 @@ export class Coral extends EventEmitter {
     }
     this.scanning = false;
     this.discovered.clear();
+    this.hubs.clear();
     if (this.adapter) {
       this.adapter.removeListener("discover", this.handleDiscoverBound);
       try {
@@ -124,8 +130,10 @@ export class Coral extends EventEmitter {
     };
     const device = createDeviceInstance(advertisement.kind, connection, deviceInfo);
     this.discovered.add(peripheral.id);
+    this.hubs.set(deviceInfo.uuid, device);
     peripheral.once("disconnect", () => {
       this.discovered.delete(peripheral.id);
+      this.hubs.delete(deviceInfo.uuid);
     });
     this.emit("discover", device);
   }
@@ -150,8 +158,10 @@ export class Coral extends EventEmitter {
       const connection = identified?.connection ?? new CoralConnection(device);
       const coralDevice = createDeviceInstance(kind, connection, info);
       this.discovered.add(device.id);
+      this.hubs.set(info.uuid, coralDevice);
       device.addEventListener?.("gattserverdisconnected", () => {
         this.discovered.delete(device.id);
+        this.hubs.delete(info.uuid);
       });
       this.emit("discover", coralDevice);
     } catch (error) {
@@ -196,6 +206,10 @@ export class Coral extends EventEmitter {
     const adapter = (module as { default?: NobleAdapter }).default ?? (module as unknown as NobleAdapter);
     this.adapter = adapter;
     return adapter;
+  }
+
+  getHub(uuid: string): CoralDevice | undefined {
+    return this.hubs.get(uuid);
   }
 }
 

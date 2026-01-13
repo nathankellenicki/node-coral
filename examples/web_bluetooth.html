@@ -5,54 +5,72 @@
   <title>Web Bluetooth node-coral Example</title>
   <link rel="stylesheet" type="text/css" href="./web_bluetooth.css" />
 
+  <script src="../dist/web/coral.min.js"></script>
 
-  <script type="module">
-    import { Coral, SingleMotorDevice, DoubleMotorDevice, ColorSensorDevice } from "../dist/web/index.js";
+  <script>
+    const { Coral: CoralClass, SingleMotorDevice, DoubleMotorDevice, ColorSensorDevice, LegoColor } = Coral;
 
     const logEl = document.getElementById("log");
     const scanButton = document.getElementById("scan");
+    const colorEl = document.getElementById("color");
 
-    const log = (message) => {
-      logEl.textContent += `${message}\n`;
-      logEl.scrollTop = logEl.scrollHeight;
-      console.log(message);
-    };
-
-    const coral = new Coral();
+    const coral = new CoralClass();
 
     coral.on("discover", async (device) => {
+
       if (device instanceof SingleMotorDevice) {
-        log(
+        console.log(
           `Discovered ${device.info.name ?? "n/a"} / ${device.info.uuid} (color=${device.info.color ?? "n/a"} tag=${device.info.tag ?? "n/a"})`
         );
-        coral.stop();
+        renderHub(device);
         await device.connect();
-        await device.setMotorSpeed(50);
-        await device.runMotorForDegrees(720, "Cw");
-        await device.runMotorForDegrees(720, "Ccw");
-        log("Motor sequence complete.");
+        while (true) {
+          await device.setMotorSpeed(50);
+          await device.runMotorForDegrees(720, "Cw");
+          await device.runMotorForDegrees(720, "Ccw");
+        }
+
       } else if (device instanceof ColorSensorDevice) {
-        log(`Discovered color sensor ${device.info.name ?? "n/a"} / ${device.info.uuid}`);
+        console.log(`Discovered color sensor ${device.info.name ?? "n/a"} / ${device.info.uuid}`);
+        renderHub(device);
         await device.connect();
         device.on("color", (payload) => {
-          log(`Color detected: id=${payload.color} reflection=${payload.reflection}`);
+          const colorName = LegoColor[payload.color] ?? "None";
+          console.log(`Color detected: id=${payload.color} (${colorName}) reflection=${payload.reflection}`);
+          if (colorEl) {
+            colorEl.style.backgroundColor = colorName === "None" ? "transparent" : colorName.toLowerCase();
+          }
         });
-      } else if (device instanceof DoubleMotorDevice) {
-        log(`Discovered double motor ${device.info.name ?? "n/a"} / ${device.info.uuid}`);
-      } else {
-        log(`Discovered device ${device.info.name ?? "n/a"} / ${device.info.uuid}`);
       }
     });
 
-    scanButton.addEventListener("click", async () => {
-      log("Scanning for Coral devices...");
-      try {
-        await coral.scan();
-      } catch (error) {
-        log(`Scan failed: ${error instanceof Error ? error.message : String(error)}`);
+    const renderHub = function (hub) {
+      const element = document.createElement("tr");
+      element.setAttribute("id", `hub-${encodeURIComponent(hub.info.uuid)}`);
+      element.innerHTML = `<td>${hub.info.name}</td><td>Blah</td><td class="disconnect_btn"><a href="#" onclick="disconnect('${encodeURIComponent(hub.info.uuid)}');">Disconnect</a></td>`;
+      document.getElementById("hubs").appendChild(element);
+    }
+
+    const disconnect = async function (uuid) {
+      const hub = coral.getHub(decodeURIComponent(uuid));
+      if (hub) {
+        await hub.disconnect();
+        const element = document.getElementById(`hub-${encodeURIComponent(hub.info.uuid)}`);
+        if (element) {
+          element.remove();
+        }
+        console.log(`Disconnected from hub ${hub.info.name ?? "n/a"} / ${hub.info.uuid}`);
       }
-    });
-  </script>
+    }
+
+    const scan = function () {
+      if (CoralClass.isWebBluetooth) {
+      console.log("Scanning for Coral devices...");
+      coral.scan(); // Start scanning for hubs
+      } else {
+          alert("Your browser does not support the Web Bluetooth specification.");
+      }
+    }
 
   </script>
 </head>

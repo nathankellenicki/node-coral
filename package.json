@@ -8,6 +8,7 @@
   "scripts": {
     "build": "tsc -b && npm run build:web",
     "build:web": "tsc -p tsconfig.web.json && node scripts/fix-web-imports.js",
+    "build:bundle": "esbuild src/index.ts --bundle --format=iife --global-name=Coral --platform=browser --minify --sourcemap --target=es2020 --outfile=dist/web/coral.min.js --external:@stoprocent/noble",
     "clean": "rimraf dist",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build && npm run test",
@@ -33,6 +34,7 @@
   "devDependencies": {
     "@types/debug": "^4.1.12",
     "@types/node": "^25.0.0",
+    "esbuild": "^0.25.9",
     "rimraf": "^6.1.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
