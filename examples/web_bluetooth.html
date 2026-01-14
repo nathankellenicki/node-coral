@@ -8,13 +8,13 @@
   <script src="../dist/web/coral.min.js"></script>
 
   <script>
-    const { Coral: CoralClass, SingleMotorDevice, ColorSensorDevice, LegoColor, CoralDeviceKind } = Coral;
+    const { Coral, SingleMotorDevice, ColorSensorDevice, LegoColor, CoralDeviceKind } = window.NodeCoral;
 
     const logEl = document.getElementById("log");
     const scanButton = document.getElementById("scan");
     const colorEl = document.getElementById("color");
 
-    const coral = new CoralClass();
+    const coral = new Coral();
 
     coral.on("discover", async (device) => {
 
@@ -67,7 +67,7 @@
     }
 
     const scan = function () {
-      if (CoralClass.isWebBluetooth) {
+      if (Coral.isWebBluetooth) {
         log("Scanning for Coral devices...");
         coral.scan(); // Start scanning for hubs
       } else {
