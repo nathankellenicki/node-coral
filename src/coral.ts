@@ -208,8 +208,12 @@ export class Coral extends EventEmitter {
     return adapter;
   }
 
-  getHub(uuid: string): CoralDevice | undefined {
+  getDevice(uuid: string): CoralDevice | undefined {
     return this.hubs.get(uuid);
+  }
+
+  getDevices(): CoralDevice[] {
+    return Array.from(this.hubs.values());
   }
 }
 
@@ -262,7 +266,7 @@ function parseManufacturerData(peripheral: Peripheral): AdvertisementDetails | n
   }
   const hardwareValue = hardwareByte & 0x7f;
   const kind = HARDWARE_KIND_MAP[hardwareValue];
-  if (!kind) {
+  if (kind === undefined) {
     return null;
   }
   const details: AdvertisementDetails = { kind };

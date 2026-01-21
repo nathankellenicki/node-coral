@@ -19,7 +19,8 @@ export class MockConnection extends EventEmitter {
   }
 
   async request(command: CoralCommand): Promise<CoralIncomingMessage> {
-    this.writes.push(encodeMessage(command));
+    const encoded = encodeMessage(command);
+    this.writes.push(Buffer.from(encoded));
     return { id: MessageType.LightColorResult, status: CommandStatus.Completed } as CoralIncomingMessage;
   }
 

@@ -1,5 +1,6 @@
 import test from "node:test";
 import { DoubleMotorDevice } from "../../../src/devices";
+import { CoralDeviceKind } from "../../../src/constants";
 import {
   MessageType,
   MotorBits,
@@ -11,7 +12,7 @@ import { DEVICE_INFO, MockConnection, assertBuffer } from "../helpers/mock-conne
 
 test("DoubleMotorDevice encodes per-method payloads", async (t) => {
   const mock = new MockConnection();
-  const device = new DoubleMotorDevice(mock as unknown as CoralConnection, "DoubleMotor", DEVICE_INFO);
+  const device = new DoubleMotorDevice(mock as unknown as CoralConnection, CoralDeviceKind.DoubleMotor, DEVICE_INFO);
 
   await t.test("setMotorSpeed encodes selected port", async () => {
     mock.clearWrites();
