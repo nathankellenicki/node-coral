@@ -2,12 +2,13 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import type { CoralConnection } from "../../../src/connection";
 import { ColorSensorDevice } from "../../../src/devices";
+import { CoralDeviceKind } from "../../../src/constants";
 import { ProductGroupDevice } from "../../../src/protocol";
 import { DEVICE_INFO, MockConnection } from "../helpers/mock-connection";
 
 test("ColorSensorDevice re-emits color payloads", async () => {
   const mock = new MockConnection(ProductGroupDevice.CoralColorSensor);
-  const device = new ColorSensorDevice(mock as unknown as CoralConnection, "ColorSensor", DEVICE_INFO);
+  const device = new ColorSensorDevice(mock as unknown as CoralConnection, CoralDeviceKind.ColorSensor, DEVICE_INFO);
   await device.connect();
 
   await new Promise<void>((resolve) => {

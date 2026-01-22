@@ -1012,7 +1012,7 @@ const COMMAND_SCHEMAS: Partial<Record<MessageType, CommandSchema>> = {
   [MessageType.ImuResetYawAxisCommand]: [{ key: "value", type: "int16" }]
 };
 
-export function encodeMessage(message: CoralCommand): Buffer {
+export function encodeMessage(message: CoralCommand): Uint8Array {
   const bytes: number[] = [message.id];
   const schema = COMMAND_SCHEMAS[message.id];
   if (schema) {
@@ -1026,10 +1026,10 @@ export function encodeMessage(message: CoralCommand): Buffer {
       writer(bytes, value);
     }
   }
-  return Buffer.from(bytes);
+  return Uint8Array.from(bytes);
 }
 
-export function decodeMessage(data: Buffer): CoralIncomingMessage | null {
+export function decodeMessage(data: Uint8Array): CoralIncomingMessage | null {
   if (!data.length) {
     return null;
   }
@@ -1120,7 +1120,7 @@ function isDeviceMessageTypeValue(value: number | undefined): boolean {
   return value !== undefined && DEVICE_MESSAGE_TYPES.has(value);
 }
 
-function decodeDeviceData(buffer: Buffer): DeviceSensorPayload[] {
+function decodeDeviceData(buffer: Uint8Array): DeviceSensorPayload[] {
   if (!buffer.length) {
     return [];
   }
@@ -1251,13 +1251,13 @@ export function getResponseKey(message: CoralIncomingMessage): string {
 export function mapProductToKind(device: ProductGroupDevice): CoralDeviceKind | "unknown" {
   switch (device) {
     case ProductGroupDevice.CoralSingleMotor:
-      return "SingleMotor";
+      return CoralDeviceKind.SingleMotor;
     case ProductGroupDevice.CoralDualMotor:
-      return "DoubleMotor";
+      return CoralDeviceKind.DoubleMotor;
     case ProductGroupDevice.CoralColorSensor:
-      return "ColorSensor";
+      return CoralDeviceKind.ColorSensor;
     case ProductGroupDevice.CoralJoystick:
-      return "Controller";
+      return CoralDeviceKind.Controller;
     default:
       return "unknown";
   }
@@ -1265,62 +1265,65 @@ export function mapProductToKind(device: ProductGroupDevice): CoralDeviceKind | 
 
 class BufferReader {
   public offset = 0;
-  constructor(private readonly buffer: Buffer) {}
+  private readonly view: DataView;
+  constructor(private readonly buffer: Uint8Array) {
+    this.view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+  }
 
   get remaining(): number {
     return Math.max(this.buffer.length - this.offset, 0);
   }
 
   readUInt8(): number {
-    const value = this.buffer.readUInt8(this.offset);
+    const value = this.view.getUint8(this.offset);
     this.offset += 1;
     return value;
   }
 
   readInt8(): number {
-    const value = this.buffer.readInt8(this.offset);
+    const value = this.view.getInt8(this.offset);
     this.offset += 1;
     return value;
   }
 
   readUInt16(): number {
-    const value = this.buffer.readUInt16LE(this.offset);
+    const value = this.view.getUint16(this.offset, true);
     this.offset += 2;
     return value;
   }
 
   readInt16(): number {
-    const value = this.buffer.readInt16LE(this.offset);
+    const value = this.view.getInt16(this.offset, true);
     this.offset += 2;
     return value;
   }
 
   readInt32(): number {
-    const value = this.buffer.readInt32LE(this.offset);
+    const value = this.view.getInt32(this.offset, true);
     this.offset += 4;
     return value;
   }
 
   readUInt32(): number {
-    const value = this.buffer.readUInt32LE(this.offset);
+    const value = this.view.getUint32(this.offset, true);
     this.offset += 4;
     return value;
   }
 
-  readBytes(length: number): Buffer {
+  readBytes(length: number): Uint8Array {
     const slice = this.buffer.slice(this.offset, this.offset + length);
     this.offset += length;
     return slice;
   }
 
-  readRemaining(): Buffer {
+  readRemaining(): Uint8Array {
     const remaining = this.buffer.slice(this.offset);
     this.offset = this.buffer.length;
     return remaining;
   }
 
   peekUInt8(): number {
-    return this.buffer.readUInt8(this.offset);
+    return this.view.getUint8(this.offset);
   }
 
   skipRemaining(): void {

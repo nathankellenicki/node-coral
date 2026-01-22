@@ -1,12 +1,13 @@
 import test from "node:test";
 import { SingleMotorDevice } from "../../../src/devices";
+import { CoralDeviceKind } from "../../../src/constants";
 import { MessageType, MotorBits, MotorMoveDirection } from "../../../src/protocol";
 import type { CoralConnection } from "../../../src/connection";
 import { DEVICE_INFO, MockConnection, assertBuffer } from "../helpers/mock-connection";
 
 test("SingleMotorDevice encodes each command", async (t) => {
   const mock = new MockConnection();
-  const device = new SingleMotorDevice(mock as unknown as CoralConnection, "SingleMotor", DEVICE_INFO);
+  const device = new SingleMotorDevice(mock as unknown as CoralConnection, CoralDeviceKind.SingleMotor, DEVICE_INFO);
 
   await t.test("setMotorSpeed clamps to +/-100", async () => {
     mock.clearWrites();

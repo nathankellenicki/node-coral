@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Web Bluetooth node-coral Example</title>
+  <link rel="stylesheet" type="text/css" href="./web_bluetooth.css" />
+
+  <script src="../dist/web/coral.min.js"></script>
+
+  <script>
+    const { Coral, SingleMotorDevice, ColorSensorDevice, ControllerDevice, LegoColor, CoralDeviceKind } = window.NodeCoral;
+
+    const logEl = document.getElementById("log");
+    const scanButton = document.getElementById("scan");
+
+    const coral = new Coral();
+
+    coral.on("discover", async (device) => {
+
+      // If a SingleMotorDevice was found, start the motor going back and forth
+      if (device instanceof SingleMotorDevice) {
+        log(
+          `Discovered ${device.info.name ?? "n/a"} / ${device.info.uuid} (color=${device.info.color ?? "n/a"} tag=${device.info.tag ?? "n/a"})`
+        );
+        renderDevice(device);
+        await device.connect();
+        while (true) {
+          await device.setMotorSpeed(50);
+          await device.runMotorForDegrees(720, "Cw");
+          await device.runMotorForDegrees(720, "Ccw");
+        }
+
+      // If a ColorSensorDevice was found, print the colors that are seen
+      } else if (device instanceof ColorSensorDevice) {
+        log(`Discovered color sensor ${device.info.name ?? "n/a"} / ${device.info.uuid}`);
+        renderDevice(device);
+        await device.connect();
+        device.on("color", (payload) => {
+          const colorName = LegoColor[payload.color] ?? "None";
+          log(`Color detected: id=${payload.color} (${colorName}) reflection=${payload.reflection}`);
+        });
+
+      // If a ControllerDevice was found, print joystick positions
+      } else if (device instanceof ControllerDevice) {
+        log(`Discovered controller ${device.info.name ?? "n/a"} / ${device.info.uuid}`);
+        renderDevice(device);
+        await device.connect();
+        device.on("joystick", (payload) => {
+          log(
+            `Joystick: left ${payload.leftPercent}% @ ${payload.leftAngle}deg, right ${payload.rightPercent}% @ ${payload.rightAngle}deg`
+          );
+        });
+      }
+
+      device.on("disconnect", () => {
+        log(`Device ${device.info.name ?? "n/a"} disconnected`);
+        const element = document.getElementById(`device-${encodeURIComponent(device.info.uuid)}`);
+        if (element) {
+          element.remove();
+        }
+      });
+
+    });
+
+    const renderDevice = function (device) {
+      const deviceType = CoralDeviceKind[device.kind] ?? "UnknownDevice";
+      const element = document.createElement("tr");
+      element.setAttribute("id", `device-${encodeURIComponent(device.info.uuid)}`);
+      element.innerHTML = `<td>${device.info.name}</td><td>${deviceType}</td><td class="disconnect_btn"><a href="#" onclick="disconnect('${encodeURIComponent(device.info.uuid)}');">Disconnect</a></td>`;
+      document.getElementById("devices").appendChild(element);
+    }
+
+    const disconnect = async function (uuid) {
+      const device = coral.getDevice(decodeURIComponent(uuid));
+      if (device) {
+        await device.disconnect();
+        const element = document.getElementById(`device-${encodeURIComponent(device.info.uuid)}`);
+        if (element) {
+          element.remove();
+        }
+        log(`Disconnected from device ${device.info.name ?? "n/a"} / ${device.info.uuid}`);
+      }
+    }
+
+    const scan = function () {
+      if (Coral.isWebBluetooth) {
+        log("Scanning for Coral devices...");
+        coral.scan(); // Start scanning for devices
+      } else {
+        alert("Your browser does not support the Web Bluetooth specification.");
+      }
+    }
+
+    const log = function (str) {
+      const element = document.getElementById("console");
+      element.innerHTML += `${str}<br />`;
+      element.scrollTop = element.scrollHeight;
+    }
+
+  </script>
+</head>
+
+<body>
+  <div>
+    <h1>Web Bluetooth node-coral Example</h1>
+  </div>
+  <div>
+    <a class="button" href="#" onclick="scan();">Add new Device</a>
+  </div>
+  <div>
+    <table id="devices">
+      <thead class="headings">
+        <td>Name</td>
+        <td>Type</td>
+      </thead>
+    </table>
+  </div>
+  <div id="console"></div>
+</body>
+
+</html>
