@@ -51,6 +51,15 @@
           );
         });
       }
+
+      device.on("disconnect", () => {
+        log(`Device ${device.info.name ?? "n/a"} disconnected`);
+        const element = document.getElementById(`device-${encodeURIComponent(device.info.uuid)}`);
+        if (element) {
+          element.remove();
+        }
+      });
+
     });
 
     const renderDevice = function (device) {

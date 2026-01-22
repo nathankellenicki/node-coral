@@ -14,6 +14,7 @@ export interface CoralDeviceInfo {
 
 export abstract class CoralDevice extends EventEmitter {
   protected readonly handleNotificationBound = (payload: DeviceSensorPayload[]) => this.handleNotification(payload);
+  private readonly handleConnectionDisconnectBound = () => this.handleConnectionDisconnect();
   private isConnected = false;
   private notificationsAttached = false;
   private readonly lastPayloads = new Map<string, DeviceSensorPayload>();
@@ -45,6 +46,7 @@ export abstract class CoralDevice extends EventEmitter {
       this.info.bootloaderVersion = [info.bootloaderMajor, info.bootloaderMinor, info.bootloaderBuild];
       if (!this.notificationsAttached) {
         this.connection.on("notification", this.handleNotificationBound);
+        this.connection.on("disconnect", this.handleConnectionDisconnectBound);
         this.notificationsAttached = true;
       }
       await this.connection.enableNotifications(DEFAULT_NOTIFICATION_INTERVAL_MS);
@@ -52,6 +54,7 @@ export abstract class CoralDevice extends EventEmitter {
     } catch (error) {
       if (this.notificationsAttached && !this.isConnected) {
         this.connection.off("notification", this.handleNotificationBound);
+        this.connection.off("disconnect", this.handleConnectionDisconnectBound);
         this.notificationsAttached = false;
       }
       this.connection.disconnect();
@@ -62,11 +65,13 @@ export abstract class CoralDevice extends EventEmitter {
   disconnect(): void {
     if (this.notificationsAttached) {
       this.connection.off("notification", this.handleNotificationBound);
+      this.connection.off("disconnect", this.handleConnectionDisconnectBound);
       this.notificationsAttached = false;
     }
     this.connection.disconnect();
     this.isConnected = false;
     this.lastPayloads.clear();
+    this.emit("disconnect");
   }
 
   sleep(timeMs: number): Promise<void> {
@@ -149,5 +154,16 @@ export abstract class CoralDevice extends EventEmitter {
 
   private clonePayload<T extends DeviceSensorPayload>(payload: T): T {
     return { ...payload };
+  }
+
+  private handleConnectionDisconnect(): void {
+    if (this.notificationsAttached) {
+      this.connection.off("notification", this.handleNotificationBound);
+      this.connection.off("disconnect", this.handleConnectionDisconnectBound);
+      this.notificationsAttached = false;
+    }
+    this.isConnected = false;
+    this.lastPayloads.clear();
+    this.emit("disconnect");
   }
 }

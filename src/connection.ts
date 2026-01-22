@@ -43,6 +43,7 @@ export class CoralConnection extends EventEmitter {
   private notifyChar?: Characteristic | WebBluetoothRemoteGATTCharacteristic;
   private readonly pending = new Map<string, PendingRequest[]>();
   private readonly handleDataBound = (data: Uint8Array) => this.handleIncoming(data);
+  private readonly handlePeripheralDisconnectBound = () => this.handlePeripheralDisconnect();
   private readonly handleWebNotificationBound = (event: WebBluetoothEvent) => {
     const target = event.target as WebBluetoothRemoteGATTCharacteristic | null;
     const value = target?.value;
@@ -76,6 +77,7 @@ export class CoralConnection extends EventEmitter {
     if (!writeChar || !notifyChar) {
       throw new Error("Unable to locate Coral characteristics");
     }
+    this.peripheral.on?.("disconnect", this.handlePeripheralDisconnectBound);
     this.writeChar = writeChar;
     this.notifyChar = notifyChar;
     this.notifyChar.on("data", this.handleDataBound);
@@ -91,6 +93,7 @@ export class CoralConnection extends EventEmitter {
     const service = await server.getPrimaryService(CORAL_SERVICE_UUID);
     const writeChar = await service.getCharacteristic(CORAL_WRITE_CHAR_UUID);
     const notifyChar = await service.getCharacteristic(CORAL_NOTIFY_CHAR_UUID);
+    device.addEventListener?.("gattserverdisconnected", this.handlePeripheralDisconnectBound);
     this.writeChar = writeChar;
     this.notifyChar = notifyChar;
     notifyChar.addEventListener("characteristicvaluechanged", this.handleWebNotificationBound);
@@ -140,6 +143,11 @@ export class CoralConnection extends EventEmitter {
   }
 
   disconnect(): void {
+    if (isWebBluetoothDevice(this.peripheral)) {
+      this.peripheral.removeEventListener?.("gattserverdisconnected", this.handlePeripheralDisconnectBound);
+    } else {
+      (this.peripheral as Peripheral).removeListener?.("disconnect", this.handlePeripheralDisconnectBound);
+    }
     if (this.notifyChar) {
       if (isWebBluetoothCharacteristic(this.notifyChar)) {
         this.notifyChar.removeEventListener("characteristicvaluechanged", this.handleWebNotificationBound);
@@ -157,6 +165,7 @@ export class CoralConnection extends EventEmitter {
       this.rejectPending(key, new Error("Connection closed"));
     }
     this.pending.clear();
+    this.emit("disconnect");
   }
 
   private handleIncoming(raw: Uint8Array): void {
@@ -193,6 +202,10 @@ export class CoralConnection extends EventEmitter {
       log("received message %s params=%o", formatMessageName(parsed.id), getMessageParams(parsed));
       this.emit("message", parsed);
     }
+  }
+
+  private handlePeripheralDisconnect(): void {
+    this.disconnect();
   }
 
   private rejectPending(key: string, error: Error): void {
