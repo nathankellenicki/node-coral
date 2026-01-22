@@ -188,7 +188,7 @@ export class CoralConnection extends EventEmitter {
     if (parsed.id === MessageType.DeviceNotification) {
       const notification = parsed as DeviceNotificationMessage;
       log("received notification %s params=%o", formatMessageName(parsed.id), getMessageParams(notification));
-      notification.deviceData.forEach((payload) => this.emit("notification", [payload]));
+      this.emit("notification", notification.deviceData);
     } else {
       log("received message %s params=%o", formatMessageName(parsed.id), getMessageParams(parsed));
       this.emit("message", parsed);

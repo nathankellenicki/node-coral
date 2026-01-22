@@ -10,6 +10,10 @@ coral.on("discover", async (device) => { // Wait to discover a device
   await device.connect();
   console.log(`Connected to ${device.info.name}`);
 
+  device.on("disconnect", () => {
+    console.log(`Device ${device.info.name} disconnected`);
+  });
+
   // DoubleMotorDevice sensors
   if (device instanceof DoubleMotorDevice) {
     device.on("motion", (motion) => {
