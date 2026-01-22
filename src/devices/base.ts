@@ -16,6 +16,7 @@ export abstract class CoralDevice extends EventEmitter {
   protected readonly handleNotificationBound = (payload: DeviceSensorPayload[]) => this.handleNotification(payload);
   private isConnected = false;
   private notificationsAttached = false;
+  private readonly lastPayloads = new Map<string, DeviceSensorPayload>();
 
   constructor(
     protected readonly connection: CoralConnection,
@@ -65,6 +66,7 @@ export abstract class CoralDevice extends EventEmitter {
     }
     this.connection.disconnect();
     this.isConnected = false;
+    this.lastPayloads.clear();
   }
 
   sleep(timeMs: number): Promise<void> {
@@ -73,6 +75,9 @@ export abstract class CoralDevice extends EventEmitter {
 
   protected handleNotification(payload: DeviceSensorPayload[]): void {
     payload.forEach((item) => {
+      if (!this.hasPayloadChanged(item)) {
+        return;
+      }
       this.emit("notification", item);
       switch (item.kind) {
         case "battery":
@@ -106,5 +111,43 @@ export abstract class CoralDevice extends EventEmitter {
           break;
       }
     });
+  }
+
+  private hasPayloadChanged(payload: DeviceSensorPayload): boolean {
+    const key = this.getPayloadKey(payload);
+    const previous = this.lastPayloads.get(key);
+    if (previous && this.arePayloadsEqual(previous, payload)) {
+      return false;
+    }
+    this.lastPayloads.set(key, this.clonePayload(payload));
+    return true;
+  }
+
+  private getPayloadKey(payload: DeviceSensorPayload): string {
+    switch (payload.kind) {
+      case "motor":
+      case "motor-gesture":
+        return `${payload.kind}:${payload.motorBitMask}`;
+      default:
+        return payload.kind;
+    }
+  }
+
+  private arePayloadsEqual(a: DeviceSensorPayload, b: DeviceSensorPayload): boolean {
+    if (a.kind !== b.kind) {
+      return false;
+    }
+    const aKeys = Object.keys(a) as (keyof typeof a)[];
+    const bKeys = Object.keys(b) as (keyof typeof b)[];
+    if (aKeys.length !== bKeys.length) {
+      return false;
+    }
+    return aKeys.every((key) =>
+      Object.prototype.hasOwnProperty.call(b, key) && a[key] === (b as typeof a)[key]
+    );
+  }
+
+  private clonePayload<T extends DeviceSensorPayload>(payload: T): T {
+    return { ...payload };
   }
 }
