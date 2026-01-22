@@ -6,9 +6,11 @@ coral.on("discover", async (device) => { // Wait to discover a device
   console.log(
     `Discovered ${device.info.name} / ${device.info.uuid} (color=${device.info.color ?? "n/a"} tag=${device.info.tag ?? "n/a"})`
   );
+  // Connect to the device
   await device.connect();
   console.log(`Connected to ${device.info.name}`);
 
+  // DoubleMotorDevice sensors
   if (device instanceof DoubleMotorDevice) {
     device.on("motion", (motion) => {
       console.log(motion);
@@ -19,20 +21,21 @@ coral.on("discover", async (device) => { // Wait to discover a device
     });
   }
 
+  // SingleMotorDevice sensors
   if (device instanceof SingleMotorDevice) {
-
     device.on("motor", (motor) => {
       console.log(motor);
     });
   }
 
+  // ControllerDevice sensors
   if (device instanceof ControllerDevice) {
-
     device.on("joystick", (joystick) => {
       console.log(joystick);
     });
   }
 
+  // ColorSensorDevice sensors
   if (device instanceof ColorSensorDevice) {
     device.on("color", (color) => {
       console.log(color);
