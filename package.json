@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -b && npm run build:web",
+    "build": "tsc -b && npm run build:web && npm run build:bundle",
     "build:web": "tsc -p tsconfig.web.json && node scripts/fix-web-imports.js",
     "build:bundle": "esbuild src/index.ts --bundle --format=iife --global-name=NodeCoral --platform=browser --minify --sourcemap --target=es2020 --outfile=dist/web/coral.min.js --external:@stoprocent/noble",
     "clean": "rimraf dist",

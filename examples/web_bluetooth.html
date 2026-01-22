@@ -8,7 +8,7 @@
   <script src="../dist/web/coral.min.js"></script>
 
   <script>
-    const { Coral, SingleMotorDevice, ColorSensorDevice, LegoColor, CoralDeviceKind } = window.NodeCoral;
+    const { Coral, SingleMotorDevice, ColorSensorDevice, ControllerDevice, LegoColor, CoralDeviceKind } = window.NodeCoral;
 
     const logEl = document.getElementById("log");
     const scanButton = document.getElementById("scan");
@@ -37,11 +37,23 @@
         renderHub(device);
         await device.connect();
         device.on("color", (payload) => {
+          console.log(payload);
           const colorName = LegoColor[payload.color] ?? "None";
           log(`Color detected: id=${payload.color} (${colorName}) reflection=${payload.reflection}`);
           if (colorEl) {
             colorEl.style.backgroundColor = colorName === "None" ? "transparent" : colorName.toLowerCase();
           }
+        });
+
+      // If a ControllerDevice was found, print joystick positions
+      } else if (device instanceof ControllerDevice) {
+        log(`Discovered controller ${device.info.name ?? "n/a"} / ${device.info.uuid}`);
+        renderHub(device);
+        await device.connect();
+        device.on("joystick", (payload) => {
+          log(
+            `Joystick: left ${payload.leftPercent}% @ ${payload.leftAngle}deg, right ${payload.rightPercent}% @ ${payload.rightAngle}deg`
+          );
         });
       }
     });
