@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { Coral } from "../../../src/coral";
 import { SingleMotorDevice } from "../../../src/devices";
+import { MotorDirection, MotorEndState } from "../../../src/devices";
 import { MotorNotificationPayload, MotorState } from "../../../src/protocol";
 import { scheduleProcessExit } from "../helpers/test-utils";
 
@@ -34,7 +35,7 @@ test(
 
     await t.test("set speed and start", async () => {
       await motor.setMotorSpeed(30);
-      await expectRotation(motor, () => motor.startMotor("Cw"), "startMotor");
+      await expectRotation(motor, () => motor.startMotor(MotorDirection.Clockwise), "startMotor");
       await expectStop(motor, () => motor.stopMotor(), "stop after startMotor");
     });
 
@@ -49,12 +50,12 @@ test(
     });
 
     await t.test("run for degrees", async () => {
-      await expectRotation(motor, () => motor.runMotorForDegrees(180, "Cw"), "runMotorForDegrees");
+      await expectRotation(motor, () => motor.runMotorForDegrees(180, MotorDirection.Clockwise), "runMotorForDegrees");
       await waitForStopEvent(motor, "runMotorForDegrees completion");
     });
 
     await t.test("run for time", async () => {
-      await expectRotation(motor, () => motor.runMotorForTime(600, "Cw"), "runMotorForTime");
+      await expectRotation(motor, () => motor.runMotorForTime(600, MotorDirection.Clockwise), "runMotorForTime");
       await waitForStopEvent(motor, "runMotorForTime completion");
     });
 
@@ -62,7 +63,7 @@ test(
       await motor.resetMotorRelativePosition(0);
       await expectRotation(
         motor,
-        () => motor.runMotorToAbsolutePosition(90, "Shortest"),
+        () => motor.runMotorToAbsolutePosition(90, MotorDirection.Shortest),
         "runMotorToAbsolutePosition"
       );
       await waitForStopEvent(motor, "runMotorToAbsolutePosition completion");
@@ -75,7 +76,7 @@ test(
     });
 
     await t.test("set end state and acceleration", async () => {
-      await motor.setMotorEndState("Brake");
+      await motor.setMotorEndState(MotorEndState.Brake);
       await motor.setMotorAcceleration(10, 12);
     });
 

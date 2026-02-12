@@ -1,11 +1,12 @@
 import test from "node:test";
 import { DoubleMotorDevice } from "../../../src/devices";
+import { MotorDirection, MotorEndState, MotorPort, MovementDirection } from "../../../src/devices";
 import { CoralDeviceKind } from "../../../src/constants";
 import {
   MessageType,
   MotorBits,
   MotorMoveDirection,
-  MovementDirection
+  MovementDirection as ProtocolMovementDirection
 } from "../../../src/protocol";
 import type { CoralConnection } from "../../../src/connection";
 import { DEVICE_INFO, MockConnection, assertBuffer } from "../helpers/mock-connection";
@@ -16,7 +17,7 @@ test("DoubleMotorDevice encodes per-method payloads", async (t) => {
 
   await t.test("setMotorSpeed encodes selected port", async () => {
     mock.clearWrites();
-    await device.setMotorSpeed("right", -17);
+    await device.setMotorSpeed(MotorPort.Right, -17);
     assertBuffer(mock.popWrite(), 3, (buf) => {
       buf[0] = MessageType.MotorSetSpeedCommand;
       buf[1] = MotorBits.Right;
@@ -43,7 +44,7 @@ test("DoubleMotorDevice encodes per-method payloads", async (t) => {
 
   await t.test("setMotorPower writes signed duty per port", async () => {
     mock.clearWrites();
-    await device.setMotorPower("left", 75);
+    await device.setMotorPower(MotorPort.Left, 75);
     assertBuffer(mock.popWrite(), 4, (buf) => {
       buf[0] = MessageType.MotorSetDutyCycleCommand;
       buf[1] = MotorBits.Left;
@@ -54,7 +55,7 @@ test("DoubleMotorDevice encodes per-method payloads", async (t) => {
 
   await t.test("startMotor encodes direction per port", async () => {
     mock.clearWrites();
-    await device.startMotor("right", "Shortest");
+    await device.startMotor(MotorPort.Right, MotorDirection.Shortest);
     assertBuffer(mock.popWrite(), 3, (buf) => {
       buf[0] = MessageType.MotorRunCommand;
       buf[1] = MotorBits.Right;
@@ -65,7 +66,7 @@ test("DoubleMotorDevice encodes per-method payloads", async (t) => {
 
   await t.test("runMotorForDegrees writes port, degrees, direction", async () => {
     mock.clearWrites();
-    await device.runMotorForDegrees("left", 540, "Longest");
+    await device.runMotorForDegrees(MotorPort.Left, 540, MotorDirection.Longest);
     assertBuffer(mock.popWrite(), 7, (buf) => {
       buf[0] = MessageType.MotorRunForDegreesCommand;
       buf[1] = MotorBits.Left;
@@ -77,7 +78,7 @@ test("DoubleMotorDevice encodes per-method payloads", async (t) => {
 
   await t.test("runMotorForTime uses ms + direction", async () => {
     mock.clearWrites();
-    await device.runMotorForTime("both", 2_000, "Ccw");
+    await device.runMotorForTime(MotorPort.Both, 2_000, MotorDirection.Counterclockwise);
     assertBuffer(mock.popWrite(), 7, (buf) => {
       buf[0] = MessageType.MotorRunForTimeCommand;
       buf[1] = MotorBits.Both;
@@ -89,7 +90,7 @@ test("DoubleMotorDevice encodes per-method payloads", async (t) => {
 
   await t.test("runMotorToAbsolutePosition writes uint16 position", async () => {
     mock.clearWrites();
-    await device.runMotorToAbsolutePosition("right", 90, "Cw");
+    await device.runMotorToAbsolutePosition(MotorPort.Right, 90, MotorDirection.Clockwise);
     assertBuffer(mock.popWrite(), 5, (buf) => {
       buf[0] = MessageType.MotorRunToAbsolutePositionCommand;
       buf[1] = MotorBits.Right;
@@ -101,7 +102,7 @@ test("DoubleMotorDevice encodes per-method payloads", async (t) => {
 
   await t.test("runMotorToRelativePosition uses signed offset", async () => {
     mock.clearWrites();
-    await device.runMotorToRelativePosition("both", -120);
+    await device.runMotorToRelativePosition(MotorPort.Both, -120);
     assertBuffer(mock.popWrite(), 6, (buf) => {
       buf[0] = MessageType.MotorRunToRelativePositionCommand;
       buf[1] = MotorBits.Both;
@@ -112,7 +113,7 @@ test("DoubleMotorDevice encodes per-method payloads", async (t) => {
 
   await t.test("resetMotorRelativePosition and setter use mask + value", async () => {
     mock.clearWrites();
-    await device.resetMotorRelativePosition("left", 12);
+    await device.resetMotorRelativePosition(MotorPort.Left, 12);
     assertBuffer(mock.popWrite(), 6, (buf) => {
       buf[0] = MessageType.MotorResetRelativePositionCommand;
       buf[1] = MotorBits.Left;
@@ -121,7 +122,7 @@ test("DoubleMotorDevice encodes per-method payloads", async (t) => {
     mock.assertDrained();
 
     mock.clearWrites();
-    await device.setMotorRelativePosition("right", 24);
+    await device.setMotorRelativePosition(MotorPort.Right, 24);
     assertBuffer(mock.popWrite(), 6, (buf) => {
       buf[0] = MessageType.MotorResetRelativePositionCommand;
       buf[1] = MotorBits.Right;
@@ -142,7 +143,7 @@ test("DoubleMotorDevice encodes per-method payloads", async (t) => {
 
   await t.test("setMotorEndState encodes enum via helper", async () => {
     mock.clearWrites();
-    await device.setMotorEndState("left", "SmartBrake");
+    await device.setMotorEndState(MotorPort.Left, MotorEndState.SmartBrake);
     assertBuffer(mock.popWrite(), 3, (buf) => {
       buf[0] = MessageType.MotorSetEndStateCommand;
       buf[1] = MotorBits.Left;
@@ -153,7 +154,7 @@ test("DoubleMotorDevice encodes per-method payloads", async (t) => {
 
   await t.test("setMotorAcceleration clamps both values", async () => {
     mock.clearWrites();
-    await device.setMotorAcceleration("right", 10, 999);
+    await device.setMotorAcceleration(MotorPort.Right, 10, 999);
     assertBuffer(mock.popWrite(), 4, (buf) => {
       buf[0] = MessageType.MotorSetAccelerationCommand;
       buf[1] = MotorBits.Right;
@@ -165,10 +166,10 @@ test("DoubleMotorDevice encodes per-method payloads", async (t) => {
 
   await t.test("startMoving encodes direction enum", async () => {
     mock.clearWrites();
-    await device.startMoving("Backward");
+    await device.startMoving(MovementDirection.Backward);
     assertBuffer(mock.popWrite(), 2, (buf) => {
       buf[0] = MessageType.MovementMoveCommand;
-      buf[1] = MovementDirection.Backward;
+      buf[1] = ProtocolMovementDirection.Backward;
     });
     mock.assertDrained();
   });
@@ -184,33 +185,33 @@ test("DoubleMotorDevice encodes per-method payloads", async (t) => {
 
   await t.test("moveForTime encodes ms + direction", async () => {
     mock.clearWrites();
-    await device.moveForTime(2_500, "Left");
+    await device.moveForTime(2_500, MovementDirection.Left);
     assertBuffer(mock.popWrite(), 6, (buf) => {
       buf[0] = MessageType.MovementMoveForTimeCommand;
       buf.writeUInt32LE(2_500, 1);
-      buf[5] = MovementDirection.Left;
+      buf[5] = ProtocolMovementDirection.Left;
     });
     mock.assertDrained();
   });
 
   await t.test("moveForDegrees encodes signed degrees + direction", async () => {
     mock.clearWrites();
-    await device.moveForDegrees(-360, "Right");
+    await device.moveForDegrees(-360, MovementDirection.Right);
     assertBuffer(mock.popWrite(), 6, (buf) => {
       buf[0] = MessageType.MovementMoveForDegreesCommand;
       buf.writeInt32LE(-360, 1);
-      buf[5] = MovementDirection.Right;
+      buf[5] = ProtocolMovementDirection.Right;
     });
     mock.assertDrained();
   });
 
   await t.test("moveForDistance proxies degrees helper", async () => {
     mock.clearWrites();
-    await device.moveForDistance(123, "Forward");
+    await device.moveForDistance(123, MovementDirection.Forward);
     assertBuffer(mock.popWrite(), 6, (buf) => {
       buf[0] = MessageType.MovementMoveForDegreesCommand;
       buf.writeInt32LE(123, 1);
-      buf[5] = MovementDirection.Forward;
+      buf[5] = ProtocolMovementDirection.Forward;
     });
     mock.assertDrained();
   });
@@ -270,7 +271,7 @@ test("DoubleMotorDevice encodes per-method payloads", async (t) => {
 
   await t.test("setMovementEndState uses enum", async () => {
     mock.clearWrites();
-    await device.setMovementEndState("Brake");
+    await device.setMovementEndState(MotorEndState.Brake);
     assertBuffer(mock.popWrite(), 2, (buf) => {
       buf[0] = MessageType.MovementSetEndStateCommand;
       buf.writeInt8(1, 1);
@@ -280,7 +281,7 @@ test("DoubleMotorDevice encodes per-method payloads", async (t) => {
 
   await t.test("setMoveEndState proxies movement setter", async () => {
     mock.clearWrites();
-    await device.setMoveEndState("Continue");
+    await device.setMoveEndState(MotorEndState.Continue);
     assertBuffer(mock.popWrite(), 2, (buf) => {
       buf[0] = MessageType.MovementSetEndStateCommand;
       buf.writeInt8(3, 1);
@@ -322,11 +323,11 @@ test("DoubleMotorDevice encodes per-method payloads", async (t) => {
 
   await t.test("turn delegates to moveForDegrees", async () => {
     mock.clearWrites();
-    await device.turn(180, "Left");
+    await device.turn(180, MovementDirection.Left);
     assertBuffer(mock.popWrite(), 6, (buf) => {
       buf[0] = MessageType.MovementMoveForDegreesCommand;
       buf.writeInt32LE(180, 1);
-      buf[5] = MovementDirection.Left;
+      buf[5] = ProtocolMovementDirection.Left;
     });
     mock.assertDrained();
   });

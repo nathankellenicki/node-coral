@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { Coral } from "../../../src/coral";
 import { DoubleMotorDevice } from "../../../src/devices";
+import { MotorDirection, MotorEndState, MotorPort } from "../../../src/devices";
 import { MotorNotificationPayload, MotorBits, MotorState } from "../../../src/protocol";
 import { scheduleProcessExit } from "../helpers/test-utils";
 
@@ -10,12 +11,10 @@ const MOTOR_EVENT_TIMEOUT_MS = Number(process.env.CORAL_TEST_EVENT_TIMEOUT ?? 10
 const AUTO_STOP_TIMEOUT_MS = Number(process.env.CORAL_TEST_AUTO_STOP_TIMEOUT ?? 12_000);
 const SPEED_THRESHOLD = Number(process.env.CORAL_TEST_MIN_SPEED ?? 1);
 
-type MotorPortName = "left" | "right" | "both";
-
-const PORT_BITS: Record<MotorPortName, MotorBits> = {
-  left: MotorBits.Left,
-  right: MotorBits.Right,
-  both: MotorBits.Both
+const PORT_BITS: Record<MotorPort, MotorBits> = {
+  [MotorPort.Left]: MotorBits.Left,
+  [MotorPort.Right]: MotorBits.Right,
+  [MotorPort.Both]: MotorBits.Both
 };
 
 test(
@@ -37,7 +36,7 @@ test(
     });
 
     await t.test("initial stop", async () => {
-      await expectStopForPort(motor, "both", () => motor.stopMotor("both"), "initial stop");
+      await expectStopForPort(motor, MotorPort.Both, () => motor.stopMotor(MotorPort.Both), "initial stop");
     });
 
     await t.test("set motor speeds", async () => {
@@ -45,69 +44,69 @@ test(
     });
 
     await t.test("start motor left", async () => {
-      await expectRotationForPort(motor, "left", () => motor.startMotor("left", "Cw"), "startMotor left");
-      await expectStopForPort(motor, "left", () => motor.stopMotor("left"), "stop left after start");
+      await expectRotationForPort(motor, MotorPort.Left, () => motor.startMotor(MotorPort.Left, MotorDirection.Clockwise), "startMotor left");
+      await expectStopForPort(motor, MotorPort.Left, () => motor.stopMotor(MotorPort.Left), "stop left after start");
     });
 
     await t.test("start motor right", async () => {
-      await expectRotationForPort(motor, "right", () => motor.startMotor("right", "Ccw"), "startMotor right");
-      await expectStopForPort(motor, "right", () => motor.stopMotor("right"), "stop right after start");
+      await expectRotationForPort(motor, MotorPort.Right, () => motor.startMotor(MotorPort.Right, MotorDirection.Counterclockwise), "startMotor right");
+      await expectStopForPort(motor, MotorPort.Right, () => motor.stopMotor(MotorPort.Right), "stop right after start");
     });
 
     await t.test("start motor both", async () => {
-      await expectRotationForPort(motor, "both", () => motor.startMotor("both", "Cw"), "startMotor both");
-      await expectStopForPort(motor, "both", () => motor.stopMotor("both"), "stop both after start");
+      await expectRotationForPort(motor, MotorPort.Both, () => motor.startMotor(MotorPort.Both, MotorDirection.Clockwise), "startMotor both");
+      await expectStopForPort(motor, MotorPort.Both, () => motor.stopMotor(MotorPort.Both), "stop both after start");
     });
 
     await t.test("set motor power left", async () => {
-      await expectRotationForPort(motor, "left", () => motor.setMotorPower("left", 25), "setMotorPower left");
-      await expectStopForPort(motor, "left", () => motor.stopMotor("left"), "stop after power left");
+      await expectRotationForPort(motor, MotorPort.Left, () => motor.setMotorPower(MotorPort.Left, 25), "setMotorPower left");
+      await expectStopForPort(motor, MotorPort.Left, () => motor.stopMotor(MotorPort.Left), "stop after power left");
     });
 
     await t.test("set motor power right", async () => {
-      await expectRotationForPort(motor, "right", () => motor.setMotorPower("right", -25), "setMotorPower right");
-      await expectStopForPort(motor, "right", () => motor.stopMotor("right"), "stop after power right");
+      await expectRotationForPort(motor, MotorPort.Right, () => motor.setMotorPower(MotorPort.Right, -25), "setMotorPower right");
+      await expectStopForPort(motor, MotorPort.Right, () => motor.stopMotor(MotorPort.Right), "stop after power right");
     });
 
     await t.test("run motor for degrees left", async () => {
-      await expectRotationForPort(motor, "left", () => motor.runMotorForDegrees("left", 180, "Cw"), "runMotorForDegrees left");
-      await waitForStopEvent(motor, "left", "runMotorForDegrees left completion");
+      await expectRotationForPort(motor, MotorPort.Left, () => motor.runMotorForDegrees(MotorPort.Left, 180, MotorDirection.Clockwise), "runMotorForDegrees left");
+      await waitForStopEvent(motor, MotorPort.Left, "runMotorForDegrees left completion");
     });
 
     await t.test("run motor for time right", async () => {
-      await expectRotationForPort(motor, "right", () => motor.runMotorForTime("right", 600, "Cw"), "runMotorForTime right");
-      await waitForStopEvent(motor, "right", "runMotorForTime right completion");
+      await expectRotationForPort(motor, MotorPort.Right, () => motor.runMotorForTime(MotorPort.Right, 600, MotorDirection.Clockwise), "runMotorForTime right");
+      await waitForStopEvent(motor, MotorPort.Right, "runMotorForTime right completion");
     });
 
     await t.test("run to absolute position left", async () => {
-      await motor.resetMotorRelativePosition("left", 0);
+      await motor.resetMotorRelativePosition(MotorPort.Left, 0);
       await expectRotationForPort(
         motor,
-        "left",
-        () => motor.runMotorToAbsolutePosition("left", 90, "Shortest"),
+        MotorPort.Left,
+        () => motor.runMotorToAbsolutePosition(MotorPort.Left, 90, MotorDirection.Shortest),
         "runMotorToAbsolutePosition left"
       );
-      await waitForStopEvent(motor, "left", "runMotorToAbsolutePosition left completion");
+      await waitForStopEvent(motor, MotorPort.Left, "runMotorToAbsolutePosition left completion");
     });
 
     await t.test("run to relative position right", async () => {
-      await motor.setMotorRelativePosition("right", 0);
+      await motor.setMotorRelativePosition(MotorPort.Right, 0);
       await expectRotationForPort(
         motor,
-        "right",
-        () => motor.runMotorToRelativePosition("right", 90),
+        MotorPort.Right,
+        () => motor.runMotorToRelativePosition(MotorPort.Right, 90),
         "runMotorToRelativePosition right"
       );
-      await waitForStopEvent(motor, "right", "runMotorToRelativePosition right completion");
+      await waitForStopEvent(motor, MotorPort.Right, "runMotorToRelativePosition right completion");
     });
 
     await t.test("set end state and acceleration", async () => {
-      await motor.setMotorEndState("left", "Brake");
-      await motor.setMotorAcceleration("right", 10, 12);
+      await motor.setMotorEndState(MotorPort.Left, MotorEndState.Brake);
+      await motor.setMotorAcceleration(MotorPort.Right, 10, 12);
     });
 
     await t.test("final stop", async () => {
-      await expectStopForPort(motor, "both", () => motor.stopMotor("both"), "final stop");
+      await expectStopForPort(motor, MotorPort.Both, () => motor.stopMotor(MotorPort.Both), "final stop");
     });
     scheduleProcessExit();
   }
@@ -138,7 +137,7 @@ function waitForDoubleMotor(coral: Coral, timeoutMs: number): Promise<DoubleMoto
 
 async function expectRotationForPort(
   device: DoubleMotorDevice,
-  port: MotorPortName,
+  port: MotorPort,
   action: () => Promise<void>,
   label: string
 ): Promise<MotorNotificationPayload> {
@@ -156,7 +155,7 @@ async function expectRotationForPort(
 
 async function expectStopForPort(
   device: DoubleMotorDevice,
-  port: MotorPortName,
+  port: MotorPort,
   action: () => Promise<void>,
   label: string
 ): Promise<MotorNotificationPayload> {
@@ -168,7 +167,7 @@ async function expectStopForPort(
 
 function waitForStopEvent(
   device: DoubleMotorDevice,
-  port: MotorPortName,
+  port: MotorPort,
   label: string
 ): Promise<MotorNotificationPayload> {
   return waitForMotorEventForPort(
@@ -182,7 +181,7 @@ function waitForStopEvent(
 
 function waitForMotorEventForPort(
   device: DoubleMotorDevice,
-  port: MotorPortName,
+  port: MotorPort,
   predicate: (payload: MotorNotificationPayload) => boolean,
   timeoutMs: number,
   label: string
@@ -211,7 +210,7 @@ function waitForMotorEventForPort(
   });
 }
 
-function logRotationData(label: string, port: MotorPortName, payload: MotorNotificationPayload): void {
+function logRotationData(label: string, port: MotorPort, payload: MotorNotificationPayload): void {
   logStep(
     `${label} [${port}]: state=${MotorState[payload.state]} speed=${payload.speed} power=${payload.power ?? "n/a"} position=${
       payload.position

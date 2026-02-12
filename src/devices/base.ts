@@ -3,15 +3,41 @@ import { CoralDeviceKind, DEFAULT_NOTIFICATION_INTERVAL_MS } from "../constants"
 import { CoralConnection } from "../connection";
 import { DeviceSensorPayload, mapProductToKind } from "../protocol";
 
+/** Metadata describing a discovered Coral device. */
 export interface CoralDeviceInfo {
+  /** The advertised device name, if available. */
   name?: string;
+  /** Firmware version as `[major, minor, build]`. */
   firmwareVersion: [number, number, number];
+  /** Bootloader version as `[major, minor, build]`. */
   bootloaderVersion: [number, number, number];
+  /** Unique identifier for this device. */
   uuid: string;
+  /** Advertised device color index. */
   color?: number;
+  /** Advertised tag identifier. */
   tag?: number;
 }
 
+/**
+ * Abstract base class for all Coral devices.
+ *
+ * Handles connection lifecycle, notification dispatch, and payload
+ * deduplication. Concrete subclasses add device-specific commands.
+ *
+ * Events:
+ * - `"disconnect"` — the device disconnected.
+ * - `"notification"` — any sensor/state notification received.
+ * - `"battery"` — battery level update.
+ * - `"motor"` — motor state change ({@link MotorNotificationPayload}).
+ * - `"color"` — color sensor reading ({@link ColorSensorPayload}).
+ * - `"joystick"` — joystick input ({@link JoystickPayload}).
+ * - `"button"` — button press/release ({@link ButtonPayload}).
+ * - `"motion"` — IMU motion sensor data.
+ * - `"motion-gesture"` — IMU gesture detected.
+ * - `"motor-gesture"` — motor gesture detected.
+ * - `"tag"` — NFC tag detected.
+ */
 export abstract class CoralDevice extends EventEmitter {
   protected readonly handleNotificationBound = (payload: DeviceSensorPayload[]) => this.handleNotification(payload);
   private readonly handleConnectionDisconnectBound = () => this.handleConnectionDisconnect();
@@ -21,16 +47,24 @@ export abstract class CoralDevice extends EventEmitter {
 
   constructor(
     protected readonly connection: CoralConnection,
+    /** The kind of Coral device. */
     public readonly kind: CoralDeviceKind,
+    /** Device metadata populated during discovery and connection. */
     public readonly info: CoralDeviceInfo
   ) {
     super();
   }
 
+  /** Whether the device is currently connected. */
   get connected(): boolean {
     return this.isConnected;
   }
 
+  /**
+   * Open a BLE connection to the device and enable notifications.
+   *
+   * After connecting, sensor and state events will begin emitting.
+   */
   async connect(): Promise<void> {
     if (this.isConnected) {
       return;
@@ -62,6 +96,7 @@ export abstract class CoralDevice extends EventEmitter {
     }
   }
 
+  /** Disconnect from the device and stop receiving notifications. */
   disconnect(): void {
     if (this.notificationsAttached) {
       this.connection.off("notification", this.handleNotificationBound);
@@ -74,6 +109,10 @@ export abstract class CoralDevice extends EventEmitter {
     this.emit("disconnect");
   }
 
+  /**
+   * Return a promise that resolves after the given delay.
+   * @param timeMs - Delay in milliseconds.
+   */
   sleep(timeMs: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, timeMs));
   }

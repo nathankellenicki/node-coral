@@ -1,9 +1,42 @@
-import { MotorBits, MotorEndState, MotorMoveDirection, MovementDirection } from "../protocol";
+import { MotorBits, MotorEndState as ProtocolEndState, MotorMoveDirection, MovementDirection as ProtocolMovementDirection } from "../protocol";
 
-export type MotorPort = "left" | "right" | "both";
-export type MotorDirection = "Cw" | "Ccw" | "Shortest" | "Longest";
-export type MotorEndStateName = "Default" | "Coast" | "Brake" | "Hold" | "Continue" | "SmartCoast" | "SmartBrake";
-export type MovementDirectionName = "Forward" | "Backward" | "Left" | "Right";
+/** Which motor to target on a dual-motor device. */
+export const MotorPort = {
+  Left: "left",
+  Right: "right",
+  Both: "both",
+} as const;
+export type MotorPort = typeof MotorPort[keyof typeof MotorPort];
+
+/** Rotation direction for motor commands. */
+export const MotorDirection = {
+  Clockwise: "clockwise",
+  Counterclockwise: "counterclockwise",
+  Shortest: "shortest",
+  Longest: "longest",
+} as const;
+export type MotorDirection = typeof MotorDirection[keyof typeof MotorDirection];
+
+/** Motor end-state behaviour names. */
+export const MotorEndState = {
+  Default: "default",
+  Coast: "coast",
+  Brake: "brake",
+  Hold: "hold",
+  Continue: "continue",
+  SmartCoast: "smartCoast",
+  SmartBrake: "smartBrake",
+} as const;
+export type MotorEndState = typeof MotorEndState[keyof typeof MotorEndState];
+
+/** Movement direction names for dual-motor movement commands. */
+export const MovementDirection = {
+  Forward: "forward",
+  Backward: "backward",
+  Left: "left",
+  Right: "right",
+} as const;
+export type MovementDirection = typeof MovementDirection[keyof typeof MovementDirection];
 
 export function clampSpeed(speed: number): number {
   return Math.max(-100, Math.min(100, Math.round(speed)));
@@ -15,11 +48,11 @@ export function clampAcceleration(value: number): number {
 
 export function portToBits(port: MotorPort): MotorBits {
   switch (port) {
-    case "left":
+    case MotorPort.Left:
       return MotorBits.Left;
-    case "right":
+    case MotorPort.Right:
       return MotorBits.Right;
-    case "both":
+    case MotorPort.Both:
       return MotorBits.Both;
     default:
       return MotorBits.Left;
@@ -28,48 +61,48 @@ export function portToBits(port: MotorPort): MotorBits {
 
 export function directionToEnum(direction: MotorDirection): MotorMoveDirection {
   switch (direction) {
-    case "Ccw":
+    case MotorDirection.Counterclockwise:
       return MotorMoveDirection.Ccw;
-    case "Shortest":
+    case MotorDirection.Shortest:
       return MotorMoveDirection.Shortest;
-    case "Longest":
+    case MotorDirection.Longest:
       return MotorMoveDirection.Longest;
-    case "Cw":
+    case MotorDirection.Clockwise:
     default:
       return MotorMoveDirection.Cw;
   }
 }
 
-export function movementDirectionToEnum(direction: MovementDirectionName): MovementDirection {
+export function movementDirectionToEnum(direction: MovementDirection): ProtocolMovementDirection {
   switch (direction) {
-    case "Backward":
-      return MovementDirection.Backward;
-    case "Left":
-      return MovementDirection.Left;
-    case "Right":
-      return MovementDirection.Right;
-    case "Forward":
+    case MovementDirection.Backward:
+      return ProtocolMovementDirection.Backward;
+    case MovementDirection.Left:
+      return ProtocolMovementDirection.Left;
+    case MovementDirection.Right:
+      return ProtocolMovementDirection.Right;
+    case MovementDirection.Forward:
     default:
-      return MovementDirection.Forward;
+      return ProtocolMovementDirection.Forward;
   }
 }
 
-export function endStateToEnum(state: MotorEndStateName): MotorEndState {
+export function endStateToEnum(state: MotorEndState): ProtocolEndState {
   switch (state) {
-    case "Coast":
-      return MotorEndState.Coast;
-    case "Brake":
-      return MotorEndState.Brake;
-    case "Hold":
-      return MotorEndState.Hold;
-    case "Continue":
-      return MotorEndState.Continue;
-    case "SmartCoast":
-      return MotorEndState.SmartCoast;
-    case "SmartBrake":
-      return MotorEndState.SmartBrake;
-    case "Default":
+    case MotorEndState.Coast:
+      return ProtocolEndState.Coast;
+    case MotorEndState.Brake:
+      return ProtocolEndState.Brake;
+    case MotorEndState.Hold:
+      return ProtocolEndState.Hold;
+    case MotorEndState.Continue:
+      return ProtocolEndState.Continue;
+    case MotorEndState.SmartCoast:
+      return ProtocolEndState.SmartCoast;
+    case MotorEndState.SmartBrake:
+      return ProtocolEndState.SmartBrake;
+    case MotorEndState.Default:
     default:
-      return MotorEndState.Default;
+      return ProtocolEndState.Default;
   }
 }

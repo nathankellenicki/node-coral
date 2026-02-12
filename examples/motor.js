@@ -1,4 +1,4 @@
-import { Coral, SingleMotorDevice, DoubleMotorDevice } from "../dist/index.js";
+import { Coral, SingleMotorDevice, DoubleMotorDevice, MotorDirection } from "../dist/index.js";
 
 const coral = new Coral();
 
@@ -11,8 +11,8 @@ coral.on("discover", async (device) => { // Wait to discover a device
     await device.connect();
 
     await device.setMotorSpeed(50);
-    await device.runMotorForDegrees(720, "Cw");
-    await device.runMotorForDegrees(720, "Ccw");
+    await device.runMotorForDegrees(720, MotorDirection.Clockwise);
+    await device.runMotorForDegrees(720, MotorDirection.Counterclockwise);
 
   }
 });

@@ -92,6 +92,7 @@ export enum ButtonState {
   Pressed = 1
 }
 
+/** Low-level motor rotation direction. */
 export enum MotorMoveDirection {
   Cw = 0,
   Ccw = 1,
@@ -136,6 +137,7 @@ export enum HubFace {
   Left = 5
 }
 
+/** Standard LEGO colour values as reported by the colour sensor. */
 export enum LegoColor {
   None = -1,
   Black = 0,
@@ -612,33 +614,54 @@ export type DeviceSensorPayload =
   | MotionGesturePayload
   | MotorGesturePayload;
 
+/** Notification payload for motor state changes. */
 export interface MotorNotificationPayload {
   kind: "motor";
+  /** Bitmask indicating which motor(s) this update refers to. */
   motorBitMask: MotorBits;
+  /** Current motor state. */
   state: MotorState;
+  /** Absolute encoder position in degrees. */
   absolutePosition: number;
+  /** Relative position in degrees since last reset. */
   position: number;
+  /** Current speed. */
   speed: number;
+  /** Current power (duty cycle). */
   power: number;
 }
 
+/** Notification payload for colour sensor readings. */
 export interface ColorSensorPayload {
   kind: "color";
+  /** Detected colour index (see {@link LegoColor}). */
   color: number;
+  /** Reflected light intensity (0–100). */
   reflection: number;
+  /** Raw red channel value. */
   rawRed: number;
+  /** Raw green channel value. */
   rawGreen: number;
+  /** Raw blue channel value. */
   rawBlue: number;
+  /** Hue value. */
   hue: number;
+  /** Saturation value. */
   saturation: number;
+  /** Brightness value. */
   value: number;
 }
 
+/** Notification payload for joystick input. */
 export interface JoystickPayload {
   kind: "joystick";
+  /** Left stick deflection percentage (-100 to 100). */
   leftPercent: number;
+  /** Right stick deflection percentage (-100 to 100). */
   rightPercent: number;
+  /** Left stick angle in degrees. */
   leftAngle: number;
+  /** Right stick angle in degrees. */
   rightAngle: number;
 }
 
@@ -648,8 +671,10 @@ export interface BatteryPayload {
   usbPowerState: UsbPowerState;
 }
 
+/** Notification payload for button press/release events. */
 export interface ButtonPayload {
   kind: "button";
+  /** Whether the button is currently pressed. */
   pressed: boolean;
 }
 

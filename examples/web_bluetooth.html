@@ -8,7 +8,7 @@
   <script src="../dist/web/coral.min.js"></script>
 
   <script>
-    const { Coral, SingleMotorDevice, ColorSensorDevice, ControllerDevice, LegoColor, CoralDeviceKind } = window.NodeCoral;
+    const { Coral, SingleMotorDevice, ColorSensorDevice, ControllerDevice, LegoColor, CoralDeviceKind, MotorDirection } = window.NodeCoral;
 
     const logEl = document.getElementById("log");
     const scanButton = document.getElementById("scan");
@@ -26,8 +26,8 @@
         await device.connect();
         while (true) {
           await device.setMotorSpeed(50);
-          await device.runMotorForDegrees(720, "Cw");
-          await device.runMotorForDegrees(720, "Ccw");
+          await device.runMotorForDegrees(720, MotorDirection.Clockwise);
+          await device.runMotorForDegrees(720, MotorDirection.Counterclockwise);
         }
 
       // If a ColorSensorDevice was found, print the colors that are seen

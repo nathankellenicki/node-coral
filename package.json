@@ -1,6 +1,6 @@
 {
   "name": "node-coral",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "A JavaScript/TypeScript module for LEGO Education Science (\"Coral\") devices",
   "license": "MIT",
   "main": "dist/index.js",
@@ -12,7 +12,8 @@
     "clean": "rimraf dist",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build && npm run test",
-    "test": "node scripts/run-tests-unit.js"
+    "test": "node scripts/run-tests-unit.js",
+    "docs": "typedoc"
   },
   "keywords": [
     "lego",
@@ -37,6 +38,7 @@
     "esbuild": "^0.25.9",
     "rimraf": "^6.1.2",
     "ts-node": "^10.9.2",
+    "typedoc": "^0.28.16",
     "typescript": "^5.9.3"
   }
 }

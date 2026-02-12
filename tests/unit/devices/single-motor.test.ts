@@ -1,5 +1,6 @@
 import test from "node:test";
 import { SingleMotorDevice } from "../../../src/devices";
+import { MotorDirection, MotorEndState } from "../../../src/devices";
 import { CoralDeviceKind } from "../../../src/constants";
 import { MessageType, MotorBits, MotorMoveDirection } from "../../../src/protocol";
 import type { CoralConnection } from "../../../src/connection";
@@ -42,7 +43,7 @@ test("SingleMotorDevice encodes each command", async (t) => {
 
   await t.test("startMotor encodes direction bits", async () => {
     mock.clearWrites();
-    await device.startMotor("Ccw");
+    await device.startMotor(MotorDirection.Counterclockwise);
     assertBuffer(mock.popWrite(), 3, (buf) => {
       buf[0] = MessageType.MotorRunCommand;
       buf[1] = MotorBits.Left;
@@ -53,7 +54,7 @@ test("SingleMotorDevice encodes each command", async (t) => {
 
   await t.test("runMotorForDegrees emits degrees + direction", async () => {
     mock.clearWrites();
-    await device.runMotorForDegrees(360, "Longest");
+    await device.runMotorForDegrees(360, MotorDirection.Longest);
     assertBuffer(mock.popWrite(), 7, (buf) => {
       buf[0] = MessageType.MotorRunForDegreesCommand;
       buf[1] = MotorBits.Left;
@@ -65,7 +66,7 @@ test("SingleMotorDevice encodes each command", async (t) => {
 
   await t.test("runMotorForTime emits unsigned ms", async () => {
     mock.clearWrites();
-    await device.runMotorForTime(1_500, "Cw");
+    await device.runMotorForTime(1_500, MotorDirection.Clockwise);
     assertBuffer(mock.popWrite(), 7, (buf) => {
       buf[0] = MessageType.MotorRunForTimeCommand;
       buf[1] = MotorBits.Left;
@@ -77,7 +78,7 @@ test("SingleMotorDevice encodes each command", async (t) => {
 
   await t.test("runMotorToAbsolutePosition encodes uint16 position", async () => {
     mock.clearWrites();
-    await device.runMotorToAbsolutePosition(270, "Shortest");
+    await device.runMotorToAbsolutePosition(270, MotorDirection.Shortest);
     assertBuffer(mock.popWrite(), 5, (buf) => {
       buf[0] = MessageType.MotorRunToAbsolutePositionCommand;
       buf[1] = MotorBits.Left;
@@ -132,7 +133,7 @@ test("SingleMotorDevice encodes each command", async (t) => {
 
   await t.test("setMotorEndState encodes enum", async () => {
     mock.clearWrites();
-    await device.setMotorEndState("Hold");
+    await device.setMotorEndState(MotorEndState.Hold);
     assertBuffer(mock.popWrite(), 3, (buf) => {
       buf[0] = MessageType.MotorSetEndStateCommand;
       buf[1] = MotorBits.Left;

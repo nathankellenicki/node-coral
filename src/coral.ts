@@ -26,6 +26,21 @@ type NobleAdapter = {
   stopScanning(): void;
 };
 
+/**
+ * Main entry point for discovering and managing Coral BLE devices.
+ *
+ * Create an instance and call {@link scan} to begin discovering nearby
+ * devices. Discovered devices are emitted via the `"discover"` event.
+ *
+ * @example
+ * ```ts
+ * const coral = new Coral();
+ * coral.on("discover", (device) => {
+ *   console.log("Found:", device.info.name);
+ * });
+ * await coral.scan();
+ * ```
+ */
 export class Coral extends EventEmitter {
   private scanning = false;
   private readonly discovered = new Set<string>();
@@ -35,15 +50,26 @@ export class Coral extends EventEmitter {
   };
   private adapter: NobleAdapter | undefined;
 
+  /** Whether the runtime environment supports the Web Bluetooth API. */
   static get isWebBluetooth(): boolean {
     return Boolean(getWebBluetooth());
   }
 
+  /**
+   * @param adapter - Optional Noble adapter instance. If omitted, Noble is
+   *   imported automatically at scan time (Node.js only).
+   */
   constructor(adapter?: NobleAdapter) {
     super();
     this.adapter = adapter;
   }
 
+  /**
+   * Begin scanning for Coral devices over BLE.
+   *
+   * On Node.js this uses the Noble adapter. In a browser it uses the
+   * Web Bluetooth API. Discovered devices are emitted as `"discover"` events.
+   */
   async scan(): Promise<void> {
     if (this.scanning) {
       return;
@@ -69,6 +95,7 @@ export class Coral extends EventEmitter {
     }
   }
 
+  /** Stop scanning and clear all tracked devices. */
   stop(): void {
     if (!this.scanning) {
       return;
@@ -208,10 +235,16 @@ export class Coral extends EventEmitter {
     return adapter;
   }
 
+  /**
+   * Retrieve a previously discovered device by its UUID.
+   * @param uuid - The device UUID assigned during discovery.
+   * @returns The device instance, or `undefined` if not found.
+   */
   getDevice(uuid: string): CoralDevice | undefined {
     return this.hubs.get(uuid);
   }
 
+  /** Return all currently discovered devices. */
   getDevices(): CoralDevice[] {
     return Array.from(this.hubs.values());
   }

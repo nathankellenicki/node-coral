@@ -7,7 +7,7 @@ LEGO Education Science ("Coral") introduces a compact family of Bluetooth Low En
 ### Sample Usage
 
 ```javascript
-import { Coral, SingleMotorDevice, DoubleMotorDevice } from "node-coral";
+import { Coral, SingleMotorDevice, DoubleMotorDevice, MotorDirection } from "node-coral";
 
 const coral = new Coral();
 
@@ -20,8 +20,8 @@ coral.on("discover", async (device) => { // Wait to discover a device
     await device.connect();
 
     await device.setMotorSpeed(50);
-    await device.runMotorForDegrees(720, "Cw");
-    await device.runMotorForDegrees(720, "Ccw");
+    await device.runMotorForDegrees(720, MotorDirection.Clockwise);
+    await device.runMotorForDegrees(720, MotorDirection.Counterclockwise);
 
   }
 });
@@ -29,7 +29,7 @@ coral.on("discover", async (device) => { // Wait to discover a device
 coral.scan(); // Start scanning for Coral devices
 console.log("Scanning for Coral devices...");
 
-``` 
+```
 
 ### Node.js Installation
 
