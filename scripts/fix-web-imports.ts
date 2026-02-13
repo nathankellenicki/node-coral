@@ -1,13 +1,13 @@
-const fs = require("fs");
-const path = require("path");
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "fs";
+import { dirname, join, resolve } from "path";
 
-const root = path.resolve(__dirname, "..", "dist", "web");
+const root = resolve(__dirname, "..", "dist", "web");
 
-function listJsFiles(dir) {
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  const files = [];
+function listJsFiles(dir: string): string[] {
+  const entries = readdirSync(dir, { withFileTypes: true });
+  const files: string[] = [];
   for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
+    const fullPath = join(dir, entry.name);
     if (entry.isDirectory()) {
       files.push(...listJsFiles(fullPath));
     } else if (entry.isFile() && entry.name.endsWith(".js")) {
@@ -17,24 +17,24 @@ function listJsFiles(dir) {
   return files;
 }
 
-function resolveSpecifier(fromDir, spec) {
+function resolveSpecifier(fromDir: string, spec: string): string {
   if (spec.endsWith(".js") || spec.endsWith(".mjs") || spec.endsWith(".cjs") || spec.endsWith(".json")) {
     return spec;
   }
-  const targetPath = path.resolve(fromDir, spec);
+  const targetPath = resolve(fromDir, spec);
   const fileCandidate = `${targetPath}.js`;
-  if (fs.existsSync(fileCandidate)) {
+  if (existsSync(fileCandidate)) {
     return `${spec}.js`;
   }
-  if (fs.existsSync(targetPath) && fs.statSync(targetPath).isDirectory()) {
+  if (existsSync(targetPath) && statSync(targetPath).isDirectory()) {
     return `${spec.replace(/\/$/, "")}/index.js`;
   }
   return spec;
 }
 
-function rewriteFile(filePath) {
-  const original = fs.readFileSync(filePath, "utf8");
-  const dir = path.dirname(filePath);
+function rewriteFile(filePath: string): void {
+  const original = readFileSync(filePath, "utf8");
+  const dir = dirname(filePath);
   let updated = original;
 
   const patterns = [
@@ -43,7 +43,7 @@ function rewriteFile(filePath) {
   ];
 
   for (const pattern of patterns) {
-    updated = updated.replace(pattern, (match, spec) => {
+    updated = updated.replace(pattern, (match: string, spec: string) => {
       const resolved = resolveSpecifier(dir, spec);
       if (resolved === spec) {
         return match;
@@ -53,7 +53,7 @@ function rewriteFile(filePath) {
   }
 
   if (updated !== original) {
-    fs.writeFileSync(filePath, updated, "utf8");
+    writeFileSync(filePath, updated, "utf8");
   }
 }
 

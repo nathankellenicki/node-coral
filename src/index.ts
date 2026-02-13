@@ -11,6 +11,8 @@ export { LegoColor } from "./protocol";
 export { MotorPort, MotorDirection, MotorEndState, MovementDirection } from "./devices";
 export type { CoralDeviceInfo } from "./devices";
 export { CoralDeviceKind } from "./constants";
+export { DeviceTracker, WelfordStats } from "./metrics";
+export type { SensorSnapshot } from "./metrics";
 export type {
   ButtonPayload,
   ColorSensorPayload,

@@ -118,6 +118,7 @@ export abstract class CoralDevice extends EventEmitter {
   }
 
   protected handleNotification(payload: DeviceSensorPayload[]): void {
+    this.emit("raw-notification", payload);
     payload.forEach((item) => {
       if (!this.hasPayloadChanged(item)) {
         return;
