@@ -4,11 +4,13 @@ import {
   MotorEndState,
   MotorPort,
   MovementDirection,
+  TurnDirection,
   clampAcceleration,
   clampSpeed,
   directionToEnum,
   endStateToEnum,
   movementDirectionToEnum,
+  turnDirectionToEnum,
   portToBits
 } from "./types";
 import {
@@ -28,7 +30,7 @@ import {
   createMovementMoveForTimeCommand,
   createMovementMoveTankCommand,
   createMovementMoveTankForDegreesCommand,
-  createMovementMoveTankForTimeCommand,
+  createMovementTurnForDegreesCommand,
   createMovementSetAccelerationCommand,
   createMovementSetEndStateCommand,
   createMovementSetSpeedCommand,
@@ -254,18 +256,6 @@ export class DoubleMotorDevice extends CoralDevice {
   }
 
   /**
-   * Tank-drive movement for a specified duration.
-   * @param leftSpeed - Left motor speed (-100 to 100).
-   * @param rightSpeed - Right motor speed (-100 to 100).
-   * @param timeMs - Duration in milliseconds.
-   */
-  async moveAtDualSpeedForTime(leftSpeed: number, rightSpeed: number, timeMs: number): Promise<void> {
-    await this.connection.request(
-      createMovementMoveTankForTimeCommand(timeMs, clampSpeed(leftSpeed), clampSpeed(rightSpeed))
-    );
-  }
-
-  /**
    * Tank-drive movement for a specified number of degrees.
    * @param leftSpeed - Left motor speed (-100 to 100).
    * @param rightSpeed - Right motor speed (-100 to 100).
@@ -323,11 +313,11 @@ export class DoubleMotorDevice extends CoralDevice {
   }
 
   /**
-   * Turn the robot by moving both motors for the given degrees.
+   * Turn the robot in place for the given degrees.
    * @param degrees - Number of degrees to rotate.
-   * @param direction - Turn direction (`MovementDirection.Left` or `MovementDirection.Right`).
+   * @param direction - Turn direction (`TurnDirection.Left` or `TurnDirection.Right`).
    */
-  async turn(degrees: number, direction: MovementDirection): Promise<void> {
-    await this.moveForDegrees(degrees, direction);
+  async turn(degrees: number, direction: TurnDirection): Promise<void> {
+    await this.connection.request(createMovementTurnForDegreesCommand(degrees, turnDirectionToEnum(direction)));
   }
 }

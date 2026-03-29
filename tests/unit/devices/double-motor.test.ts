@@ -1,12 +1,13 @@
 import test from "node:test";
 import { DoubleMotorDevice } from "../../../src/devices";
-import { MotorDirection, MotorEndState, MotorPort, MovementDirection } from "../../../src/devices";
+import { MotorDirection, MotorEndState, MotorPort, MovementDirection, TurnDirection } from "../../../src/devices";
 import { CoralDeviceKind } from "../../../src/constants";
 import {
   MessageType,
   MotorBits,
   MotorMoveDirection,
-  MovementDirection as ProtocolMovementDirection
+  MovementDirection as ProtocolMovementDirection,
+  MovementTurnDirection
 } from "../../../src/protocol";
 import type { CoralConnection } from "../../../src/connection";
 import { DEVICE_INFO, MockConnection, assertBuffer } from "../helpers/mock-connection";
@@ -227,18 +228,6 @@ test("DoubleMotorDevice encodes per-method payloads", async (t) => {
     mock.assertDrained();
   });
 
-  await t.test("moveAtDualSpeedForTime writes ms + speeds", async () => {
-    mock.clearWrites();
-    await device.moveAtDualSpeedForTime(-75, 80, 900);
-    assertBuffer(mock.popWrite(), 7, (buf) => {
-      buf[0] = MessageType.MovementMoveTankForTimeCommand;
-      buf.writeUInt32LE(900, 1);
-      buf.writeInt8(-75, 5);
-      buf.writeInt8(80, 6);
-    });
-    mock.assertDrained();
-  });
-
   await t.test("moveAtDualSpeedForDegrees writes signed degrees + speeds", async () => {
     mock.clearWrites();
     await device.moveAtDualSpeedForDegrees(15, -15, 720);
@@ -321,13 +310,24 @@ test("DoubleMotorDevice encodes per-method payloads", async (t) => {
     mock.assertDrained();
   });
 
-  await t.test("turn delegates to moveForDegrees", async () => {
+  await t.test("turn encodes degrees + turn direction", async () => {
     mock.clearWrites();
-    await device.turn(180, MovementDirection.Left);
+    await device.turn(180, TurnDirection.Left);
     assertBuffer(mock.popWrite(), 6, (buf) => {
-      buf[0] = MessageType.MovementMoveForDegreesCommand;
+      buf[0] = MessageType.MovementTurnForDegreesCommand;
       buf.writeInt32LE(180, 1);
-      buf[5] = ProtocolMovementDirection.Left;
+      buf[5] = MovementTurnDirection.Left;
+    });
+    mock.assertDrained();
+  });
+
+  await t.test("turn right encodes correct direction", async () => {
+    mock.clearWrites();
+    await device.turn(90, TurnDirection.Right);
+    assertBuffer(mock.popWrite(), 6, (buf) => {
+      buf[0] = MessageType.MovementTurnForDegreesCommand;
+      buf.writeInt32LE(90, 1);
+      buf[5] = MovementTurnDirection.Right;
     });
     mock.assertDrained();
   });

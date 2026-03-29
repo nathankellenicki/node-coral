@@ -1,4 +1,4 @@
-import { MotorBits, MotorEndState as ProtocolEndState, MotorMoveDirection, MovementDirection as ProtocolMovementDirection } from "../protocol";
+import { MotorBits, MotorEndState as ProtocolEndState, MotorMoveDirection, MovementDirection as ProtocolMovementDirection, MovementTurnDirection } from "../protocol";
 
 /** Which motor to target on a dual-motor device. */
 export const MotorPort = {
@@ -37,6 +37,13 @@ export const MovementDirection = {
   Right: "right",
 } as const;
 export type MovementDirection = typeof MovementDirection[keyof typeof MovementDirection];
+
+/** Turn direction for the turn-in-place command. */
+export const TurnDirection = {
+  Left: "left",
+  Right: "right",
+} as const;
+export type TurnDirection = typeof TurnDirection[keyof typeof TurnDirection];
 
 export function clampSpeed(speed: number): number {
   return Math.max(-100, Math.min(100, Math.round(speed)));
@@ -84,6 +91,16 @@ export function movementDirectionToEnum(direction: MovementDirection): ProtocolM
     case MovementDirection.Forward:
     default:
       return ProtocolMovementDirection.Forward;
+  }
+}
+
+export function turnDirectionToEnum(direction: TurnDirection): MovementTurnDirection {
+  switch (direction) {
+    case TurnDirection.Right:
+      return MovementTurnDirection.Right;
+    case TurnDirection.Left:
+    default:
+      return MovementTurnDirection.Left;
   }
 }
 

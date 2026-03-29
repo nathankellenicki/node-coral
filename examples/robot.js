@@ -1,4 +1,4 @@
-import { Coral, DoubleMotorDevice, MovementDirection } from "../dist/index.js";
+import { Coral, DoubleMotorDevice, MovementDirection, TurnDirection } from "../dist/index.js";
 
 const coral = new Coral();
 
@@ -14,15 +14,15 @@ coral.on("discover", async (device) => { // Wait to discover a device
     while (true) {
       await device.moveForDistance(360, MovementDirection.Forward)
       await device.sleep(1000);
-      await device.turn(90, MovementDirection.Left);
+      await device.turn(90, TurnDirection.Left);
       await device.sleep(1000);
       await device.moveForDistance(360, MovementDirection.Forward);
       await device.sleep(1000);
-      await device.turn(90, MovementDirection.Right);
+      await device.turn(90, TurnDirection.Right);
       await device.sleep(1000);
       await device.moveForDistance(360, MovementDirection.Forward)
       await device.sleep(1000);
-      await device.turn(180, MovementDirection.Left);
+      await device.turn(180, TurnDirection.Left);
       await device.sleep(1000);
     }
   }

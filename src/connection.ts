@@ -259,8 +259,8 @@ export class CoralConnection extends EventEmitter {
       case MessageType.MovementMoveForTimeResult:
       case MessageType.MovementMoveForDegreesResult:
       case MessageType.MovementMoveTankResult:
-      case MessageType.MovementMoveTankForTimeResult:
       case MessageType.MovementMoveTankForDegreesResult:
+      case MessageType.MovementTurnForDegreesResult:
       case MessageType.MovementStopResult:
       case MessageType.MovementSetSpeedResult:
       case MessageType.MovementSetEndStateResult:

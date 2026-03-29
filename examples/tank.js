@@ -11,7 +11,9 @@ coral.on("discover", async (device) => { // Wait to discover a device
     await device.connect();
 
     // Spin in place — left motor forward, right motor backward
-    await device.moveAtDualSpeedForTime(50, -50, 1500);
+    await device.moveAtDualSpeed(50, -50);
+    await device.sleep(1500);
+    await device.stopMoving();
     await device.sleep(500);
 
     // Gentle right arc — left motor faster than right
@@ -20,7 +22,9 @@ coral.on("discover", async (device) => { // Wait to discover a device
 
     // Straight burst then coast to a stop
     await device.setMotorEndState(MotorPort.Both, MotorEndState.Coast);
-    await device.moveAtDualSpeedForTime(80, 80, 1000);
+    await device.moveAtDualSpeed(80, 80);
+    await device.sleep(1000);
+    await device.stopMoving();
   }
 });
 

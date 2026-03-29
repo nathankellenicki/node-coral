@@ -1,5 +1,5 @@
 import { EventEmitter } from "../event-emitter";
-import { CoralDeviceKind, DEFAULT_NOTIFICATION_INTERVAL_MS } from "../constants";
+import { CoralDeviceKind, DEFAULT_NOTIFICATION_INTERVAL_MS, MIN_FIRMWARE_VERSION } from "../constants";
 import { CoralConnection } from "../connection";
 import { DeviceSensorPayload, mapProductToKind } from "../protocol";
 
@@ -78,6 +78,7 @@ export abstract class CoralDevice extends EventEmitter {
       }
       this.info.firmwareVersion = [info.firmwareMajor, info.firmwareMinor, info.firmwareBuild];
       this.info.bootloaderVersion = [info.bootloaderMajor, info.bootloaderMinor, info.bootloaderBuild];
+      this.checkFirmware(this.info.firmwareVersion);
       if (!this.notificationsAttached) {
         this.connection.on("notification", this.handleNotificationBound);
         this.connection.on("disconnect", this.handleConnectionDisconnectBound);
@@ -115,6 +116,22 @@ export abstract class CoralDevice extends EventEmitter {
    */
   sleep(timeMs: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, timeMs));
+  }
+
+  private checkFirmware(version: [number, number, number]): void {
+    const [major, minor, build] = version;
+    const [minMajor, minMinor, minBuild] = MIN_FIRMWARE_VERSION;
+    if (
+      major < minMajor ||
+      (major === minMajor && minor < minMinor) ||
+      (major === minMajor && minor === minMinor && build < minBuild)
+    ) {
+      const current = version.join(".");
+      const required = MIN_FIRMWARE_VERSION.join(".");
+      throw new Error(
+        `Device firmware ${current} is below the minimum required ${required}. Please update using the LEGO Education app.`
+      );
+    }
   }
 
   protected handleNotification(payload: DeviceSensorPayload[]): void {

@@ -7,8 +7,8 @@
 
 export { Coral } from "./coral";
 export { CoralDevice, SingleMotorDevice, DoubleMotorDevice, ControllerDevice, ColorSensorDevice } from "./devices";
-export { LegoColor } from "./protocol";
-export { MotorPort, MotorDirection, MotorEndState, MovementDirection } from "./devices";
+export { LegoColor, LightPattern, SoundPattern, MotorState, MotionGesture, MotorGesture } from "./protocol";
+export { MotorPort, MotorDirection, MotorEndState, MovementDirection, TurnDirection } from "./devices";
 export type { CoralDeviceInfo } from "./devices";
 export { CoralDeviceKind } from "./constants";
 export { DeviceTracker, WelfordStats } from "./metrics";
@@ -18,5 +18,7 @@ export type {
   ColorSensorPayload,
   JoystickPayload,
   MotorNotificationPayload,
+  MotionGesturePayload,
+  MotorGesturePayload,
   MotorMoveDirection
 } from "./protocol";

@@ -49,10 +49,10 @@ export enum MessageType {
   MovementMoveForDegreesResult = 155,
   MovementMoveTankCommand = 156,
   MovementMoveTankResult = 157,
-  MovementMoveTankForTimeCommand = 158,
-  MovementMoveTankForTimeResult = 159,
-  MovementMoveTankForDegreesCommand = 160,
-  MovementMoveTankForDegreesResult = 161,
+  MovementMoveTankForDegreesCommand = 158,
+  MovementMoveTankForDegreesResult = 159,
+  MovementTurnForDegreesCommand = 160,
+  MovementTurnForDegreesResult = 161,
   MovementStopCommand = 168,
   MovementStopResult = 169,
   MovementSetSpeedCommand = 170,
@@ -120,7 +120,22 @@ export enum MovementDirection {
 export enum LightPattern {
   Solid = 0,
   Breathe = 1,
-  Pulse = 2
+  Pulse = 2,
+  ShortBlink = 3,
+  LongBlink = 4,
+  DoubleBlink = 5
+}
+
+export enum SoundPattern {
+  Single = 0,
+  Double = 1,
+  Triple = 2,
+  UpMiddleDown = 3
+}
+
+export enum MovementTurnDirection {
+  Left = 2,
+  Right = 3
 }
 
 export enum ProgramAction {
@@ -168,7 +183,30 @@ export enum MotorState {
   Ready = 0,
   Running = 1,
   Stalled = 2,
-  Holding = 6
+  CmdAborted = 3,
+  RegulationError = 4,
+  MotorDisconnected = 5,
+  Holding = 6,
+  DcRunning = 7,
+  NotAllowedToRun = 8
+}
+
+export enum MotionGesture {
+  NoGesture = -1,
+  Tapped = 0,
+  DoubleTapped = 1,
+  Collision = 2,
+  Shake = 3,
+  Freefall = 4
+}
+
+export enum MotorGesture {
+  NoGesture = -1,
+  SlowClockwise = 1,
+  FastClockwise = 2,
+  SlowCounterclockwise = 3,
+  FastCounterclockwise = 4,
+  Wiggled = 5
 }
 
 export enum UsbPowerState {
@@ -346,14 +384,16 @@ export interface LightColorCommand {
   id: MessageType.LightColorCommand;
   color: LegoColor;
   pattern: LightPattern;
+  intensity: number;
 }
 
 export type LightColorResult = CommandStatusResult<MessageType.LightColorResult>;
 
 export interface BeepCommand {
   id: MessageType.BeepCommand;
+  pattern: SoundPattern;
   frequency: number;
-  duration: number;
+  repetitions: number;
 }
 
 export type BeepResult = CommandStatusResult<MessageType.BeepResult>;
@@ -395,15 +435,6 @@ export interface MovementMoveTankCommand {
 
 export type MovementMoveTankResult = CommandStatusResult<MessageType.MovementMoveTankResult>;
 
-export interface MovementMoveTankForTimeCommand {
-  id: MessageType.MovementMoveTankForTimeCommand;
-  time: number;
-  speedLeft: number;
-  speedRight: number;
-}
-
-export type MovementMoveTankForTimeResult = CommandStatusResult<MessageType.MovementMoveTankForTimeResult>;
-
 export interface MovementMoveTankForDegreesCommand {
   id: MessageType.MovementMoveTankForDegreesCommand;
   degrees: number;
@@ -412,6 +443,14 @@ export interface MovementMoveTankForDegreesCommand {
 }
 
 export type MovementMoveTankForDegreesResult = CommandStatusResult<MessageType.MovementMoveTankForDegreesResult>;
+
+export interface MovementTurnForDegreesCommand {
+  id: MessageType.MovementTurnForDegreesCommand;
+  degrees: number;
+  direction: MovementTurnDirection;
+}
+
+export type MovementTurnForDegreesResult = CommandStatusResult<MessageType.MovementTurnForDegreesResult>;
 
 export interface MovementStopCommand {
   id: MessageType.MovementStopCommand;
@@ -486,8 +525,8 @@ export type CoralCommand =
   | MovementMoveForTimeCommand
   | MovementMoveForDegreesCommand
   | MovementMoveTankCommand
-  | MovementMoveTankForTimeCommand
   | MovementMoveTankForDegreesCommand
+  | MovementTurnForDegreesCommand
   | MovementStopCommand
   | MovementSetSpeedCommand
   | MovementSetEndStateCommand
@@ -520,8 +559,8 @@ export type CoralIncomingMessage =
   | MovementMoveForTimeResult
   | MovementMoveForDegreesResult
   | MovementMoveTankResult
-  | MovementMoveTankForTimeResult
   | MovementMoveTankForDegreesResult
+  | MovementTurnForDegreesResult
   | MovementStopResult
   | MovementSetSpeedResult
   | MovementSetEndStateResult
@@ -552,8 +591,8 @@ type StatusOnlyMessage =
   | MovementMoveForTimeResult
   | MovementMoveForDegreesResult
   | MovementMoveTankResult
-  | MovementMoveTankForTimeResult
   | MovementMoveTankForDegreesResult
+  | MovementTurnForDegreesResult
   | MovementStopResult
   | MovementSetSpeedResult
   | MovementSetEndStateResult
@@ -584,8 +623,8 @@ const STATUS_ONLY_RESULT_IDS: readonly StatusOnlyMessage["id"][] = [
   MessageType.MovementMoveForTimeResult,
   MessageType.MovementMoveForDegreesResult,
   MessageType.MovementMoveTankResult,
-  MessageType.MovementMoveTankForTimeResult,
   MessageType.MovementMoveTankForDegreesResult,
+  MessageType.MovementTurnForDegreesResult,
   MessageType.MovementStopResult,
   MessageType.MovementSetSpeedResult,
   MessageType.MovementSetEndStateResult,
@@ -701,13 +740,13 @@ export interface TagPayload {
 
 export interface MotionGesturePayload {
   kind: "motion-gesture";
-  gesture: number;
+  gesture: MotionGesture;
 }
 
 export interface MotorGesturePayload {
   kind: "motor-gesture";
   motorBitMask: MotorBits;
-  gesture: number;
+  gesture: MotorGesture;
 }
 
 const RESPONSE_TO_REQUEST: Record<number, MessageType> = {
@@ -737,8 +776,8 @@ const RESULT_TO_COMMAND: Record<number, MessageType> = {
   [MessageType.MovementMoveForTimeResult]: MessageType.MovementMoveForTimeCommand,
   [MessageType.MovementMoveForDegreesResult]: MessageType.MovementMoveForDegreesCommand,
   [MessageType.MovementMoveTankResult]: MessageType.MovementMoveTankCommand,
-  [MessageType.MovementMoveTankForTimeResult]: MessageType.MovementMoveTankForTimeCommand,
   [MessageType.MovementMoveTankForDegreesResult]: MessageType.MovementMoveTankForDegreesCommand,
+  [MessageType.MovementTurnForDegreesResult]: MessageType.MovementTurnForDegreesCommand,
   [MessageType.MovementStopResult]: MessageType.MovementStopCommand,
   [MessageType.MovementSetSpeedResult]: MessageType.MovementSetSpeedCommand,
   [MessageType.MovementSetEndStateResult]: MessageType.MovementSetEndStateCommand,
@@ -772,12 +811,12 @@ export function createDeviceNotificationRequest(delay: number): DeviceNotificati
   return buildCommand(MessageType.DeviceNotificationRequest, { delay });
 }
 
-export function createLightColorCommand(color: LegoColor, pattern: LightPattern): LightColorCommand {
-  return buildCommand(MessageType.LightColorCommand, { color, pattern });
+export function createLightColorCommand(color: LegoColor, pattern: LightPattern, intensity: number = 100): LightColorCommand {
+  return buildCommand(MessageType.LightColorCommand, { color, pattern, intensity: Math.max(0, Math.min(255, Math.round(intensity))) });
 }
 
-export function createBeepCommand(frequency: number, duration: number): BeepCommand {
-  return buildCommand(MessageType.BeepCommand, { frequency, duration });
+export function createBeepCommand(pattern: SoundPattern, frequency: number, repetitions: number): BeepCommand {
+  return buildCommand(MessageType.BeepCommand, { pattern, frequency, repetitions: Math.max(0, Math.min(255, Math.round(repetitions))) });
 }
 
 export function createStopSoundCommand(): StopSoundCommand {
@@ -887,20 +926,19 @@ export function createMovementMoveTankCommand(
   return buildCommand(MessageType.MovementMoveTankCommand, { speedLeft, speedRight });
 }
 
-export function createMovementMoveTankForTimeCommand(
-  time: number,
-  speedLeft: number,
-  speedRight: number
-): MovementMoveTankForTimeCommand {
-  return buildCommand(MessageType.MovementMoveTankForTimeCommand, { time, speedLeft, speedRight });
-}
-
 export function createMovementMoveTankForDegreesCommand(
   degrees: number,
   speedLeft: number,
   speedRight: number
 ): MovementMoveTankForDegreesCommand {
   return buildCommand(MessageType.MovementMoveTankForDegreesCommand, { degrees, speedLeft, speedRight });
+}
+
+export function createMovementTurnForDegreesCommand(
+  degrees: number,
+  direction: MovementTurnDirection
+): MovementTurnForDegreesCommand {
+  return buildCommand(MessageType.MovementTurnForDegreesCommand, { degrees, direction });
 }
 
 export function createMovementStopCommand(): MovementStopCommand {
@@ -952,11 +990,13 @@ const COMMAND_SCHEMAS: Partial<Record<MessageType, CommandSchema>> = {
   [MessageType.DeviceNotificationRequest]: [{ key: "delay", type: "uint16" }],
   [MessageType.LightColorCommand]: [
     { key: "color", type: "int8" },
-    { key: "pattern", type: "uint8" }
+    { key: "pattern", type: "uint8" },
+    { key: "intensity", type: "uint8" }
   ],
   [MessageType.BeepCommand]: [
+    { key: "pattern", type: "uint8" },
     { key: "frequency", type: "uint16" },
-    { key: "duration", type: "uint32" }
+    { key: "repetitions", type: "uint8" }
   ],
   [MessageType.MotorSetSpeedCommand]: [
     { key: "motorBitMask", type: "uint8" },
@@ -1016,15 +1056,14 @@ const COMMAND_SCHEMAS: Partial<Record<MessageType, CommandSchema>> = {
     { key: "speedLeft", type: "int8" },
     { key: "speedRight", type: "int8" }
   ],
-  [MessageType.MovementMoveTankForTimeCommand]: [
-    { key: "time", type: "uint32" },
-    { key: "speedLeft", type: "int8" },
-    { key: "speedRight", type: "int8" }
-  ],
   [MessageType.MovementMoveTankForDegreesCommand]: [
     { key: "degrees", type: "int32" },
     { key: "speedLeft", type: "int8" },
     { key: "speedRight", type: "int8" }
+  ],
+  [MessageType.MovementTurnForDegreesCommand]: [
+    { key: "degrees", type: "int32" },
+    { key: "direction", type: "uint8" }
   ],
   [MessageType.MovementSetSpeedCommand]: [{ key: "speed", type: "int8" }],
   [MessageType.MovementSetEndStateCommand]: [{ key: "endState", type: "int8" }],
@@ -1235,14 +1274,14 @@ function decodeDeviceData(buffer: Uint8Array): DeviceSensorPayload[] {
       case DeviceMessageType.ImuGestureNotification:
         events.push({
           kind: "motion-gesture",
-          gesture: payloadReader.readInt8()
+          gesture: payloadReader.readInt8() as MotionGesture
         });
         break;
       case DeviceMessageType.MotorGestureNotification:
         events.push({
           kind: "motor-gesture",
           motorBitMask: payloadReader.readUInt8() as MotorBits,
-          gesture: payloadReader.readInt8()
+          gesture: payloadReader.readInt8() as MotorGesture
         });
         break;
       default: {
