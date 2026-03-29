@@ -50,7 +50,7 @@ export class DoubleMotorDevice extends CoralDevice {
    * @param speed - Speed value from -100 to 100.
    */
   async setMotorSpeed(port: MotorPort, speed: number): Promise<void> {
-    await this.connection.request(createMotorSetSpeedCommand(portToBits(port), clampSpeed(speed)));
+    await this.connection.send(createMotorSetSpeedCommand(portToBits(port), clampSpeed(speed)));
   }
 
   /**
@@ -69,7 +69,7 @@ export class DoubleMotorDevice extends CoralDevice {
    * @param power - Power value from -100 to 100.
    */
   async setMotorPower(port: MotorPort, power: number): Promise<void> {
-    await this.connection.request(createMotorSetDutyCycleCommand(portToBits(port), clampSpeed(power)));
+    await this.connection.send(createMotorSetDutyCycleCommand(portToBits(port), clampSpeed(power)));
   }
 
   /**
@@ -97,7 +97,7 @@ export class DoubleMotorDevice extends CoralDevice {
    * @param direction - Rotation direction (default `MotorDirection.Clockwise`).
    */
   async startMotor(port: MotorPort, direction: MotorDirection = MotorDirection.Clockwise): Promise<void> {
-    await this.connection.request(createMotorRunCommand(portToBits(port), directionToEnum(direction)));
+    await this.connection.send(createMotorRunCommand(portToBits(port), directionToEnum(direction)));
   }
 
   /**
@@ -159,7 +159,7 @@ export class DoubleMotorDevice extends CoralDevice {
    * @param position - Value to set as the new zero point (default `0`).
    */
   async resetMotorRelativePosition(port: MotorPort, position: number = 0): Promise<void> {
-    await this.connection.request(createMotorResetRelativePositionCommand(portToBits(port), position));
+    await this.connection.send(createMotorResetRelativePositionCommand(portToBits(port), position));
   }
 
   /**
@@ -176,7 +176,7 @@ export class DoubleMotorDevice extends CoralDevice {
    * @param port - Which motor to stop (default `MotorPort.Both`).
    */
   async stopMotor(port: MotorPort = MotorPort.Both): Promise<void> {
-    await this.connection.request(createMotorStopCommand(portToBits(port)));
+    await this.connection.send(createMotorStopCommand(portToBits(port)));
   }
 
   /**
@@ -185,7 +185,7 @@ export class DoubleMotorDevice extends CoralDevice {
    * @param endState - The desired end state (e.g. `MotorEndState.Brake`, `MotorEndState.Coast`, `MotorEndState.Hold`).
    */
   async setMotorEndState(port: MotorPort, endState: MotorEndState): Promise<void> {
-    await this.connection.request(createMotorSetEndStateCommand(portToBits(port), endStateToEnum(endState)));
+    await this.connection.send(createMotorSetEndStateCommand(portToBits(port), endStateToEnum(endState)));
   }
 
   /**
@@ -195,7 +195,7 @@ export class DoubleMotorDevice extends CoralDevice {
    * @param deceleration - Deceleration value (0–255, defaults to `acceleration`).
    */
   async setMotorAcceleration(port: MotorPort, acceleration: number, deceleration: number = acceleration): Promise<void> {
-    await this.connection.request(
+    await this.connection.send(
       createMotorSetAccelerationCommand(
         portToBits(port),
         clampAcceleration(acceleration),
@@ -209,12 +209,12 @@ export class DoubleMotorDevice extends CoralDevice {
    * @param direction - Movement direction (default `MovementDirection.Forward`).
    */
   async startMoving(direction: MovementDirection = MovementDirection.Forward): Promise<void> {
-    await this.connection.request(createMovementMoveCommand(movementDirectionToEnum(direction)));
+    await this.connection.send(createMovementMoveCommand(movementDirectionToEnum(direction)));
   }
 
   /** Stop both motors. */
   async stopMoving(): Promise<void> {
-    await this.connection.request(createMovementStopCommand());
+    await this.connection.send(createMovementStopCommand());
   }
 
   /**
@@ -250,7 +250,7 @@ export class DoubleMotorDevice extends CoralDevice {
    * @param rightSpeed - Right motor speed (-100 to 100).
    */
   async moveAtDualSpeed(leftSpeed: number, rightSpeed: number): Promise<void> {
-    await this.connection.request(createMovementMoveTankCommand(clampSpeed(leftSpeed), clampSpeed(rightSpeed)));
+    await this.connection.send(createMovementMoveTankCommand(clampSpeed(leftSpeed), clampSpeed(rightSpeed)));
   }
 
   /**
@@ -282,7 +282,7 @@ export class DoubleMotorDevice extends CoralDevice {
    * @param speed - Speed value from -100 to 100.
    */
   async setMovementSpeed(speed: number): Promise<void> {
-    await this.connection.request(createMovementSetSpeedCommand(clampSpeed(speed)));
+    await this.connection.send(createMovementSetSpeedCommand(clampSpeed(speed)));
   }
 
   /**
@@ -290,7 +290,7 @@ export class DoubleMotorDevice extends CoralDevice {
    * @param endState - The desired end state.
    */
   async setMovementEndState(endState: MotorEndState): Promise<void> {
-    await this.connection.request(createMovementSetEndStateCommand(endStateToEnum(endState)));
+    await this.connection.send(createMovementSetEndStateCommand(endStateToEnum(endState)));
   }
 
   /** Alias for {@link setMovementEndState}. */
@@ -304,7 +304,7 @@ export class DoubleMotorDevice extends CoralDevice {
    * @param deceleration - Deceleration value (0–255, defaults to `acceleration`).
    */
   async setMovementAcceleration(acceleration: number, deceleration: number = acceleration): Promise<void> {
-    await this.connection.request(
+    await this.connection.send(
       createMovementSetAccelerationCommand(clampAcceleration(acceleration), clampAcceleration(deceleration))
     );
   }
@@ -319,7 +319,7 @@ export class DoubleMotorDevice extends CoralDevice {
    * @param value - Steering value from -100 (full left) to 100 (full right).
    */
   async setMovementSteering(value: number): Promise<void> {
-    await this.connection.request(createMovementSetTurnSteeringCommand(clampSpeed(value)));
+    await this.connection.send(createMovementSetTurnSteeringCommand(clampSpeed(value)));
   }
 
   /**

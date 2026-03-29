@@ -100,6 +100,14 @@ export class CoralConnection extends EventEmitter {
     await notifyChar.startNotifications();
   }
 
+  async send(command: CoralCommand): Promise<void> {
+    if (!this.writeChar) {
+      throw new Error("Connection is not ready");
+    }
+    log("sending command %s params=%o", formatMessageName(command.id), getMessageParams(command));
+    await writeWithoutResponse(this.writeChar, encodeMessage(command));
+  }
+
   async request<T extends CoralIncomingMessage = CoralIncomingMessage>(
     command: CoralCommand,
     timeoutMs: number = DEFAULT_TIMEOUT_MS

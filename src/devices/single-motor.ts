@@ -34,7 +34,7 @@ export class SingleMotorDevice extends CoralDevice {
    * @param speed - Speed value from -100 to 100.
    */
   async setMotorSpeed(speed: number): Promise<void> {
-    await this.connection.request(createMotorSetSpeedCommand(MotorBits.Left, clampSpeed(speed)));
+    await this.connection.send(createMotorSetSpeedCommand(MotorBits.Left, clampSpeed(speed)));
   }
 
   /**
@@ -42,7 +42,7 @@ export class SingleMotorDevice extends CoralDevice {
    * @param power - Power value from -100 to 100.
    */
   async setMotorPower(power: number): Promise<void> {
-    await this.connection.request(createMotorSetDutyCycleCommand(MotorBits.Left, clampSpeed(power)));
+    await this.connection.send(createMotorSetDutyCycleCommand(MotorBits.Left, clampSpeed(power)));
   }
 
   /**
@@ -58,7 +58,7 @@ export class SingleMotorDevice extends CoralDevice {
    * @param direction - Rotation direction (default `MotorDirection.Clockwise`).
    */
   async startMotor(direction: MotorDirection = MotorDirection.Clockwise): Promise<void> {
-    await this.connection.request(createMotorRunCommand(MotorBits.Left, directionToEnum(direction)));
+    await this.connection.send(createMotorRunCommand(MotorBits.Left, directionToEnum(direction)));
   }
 
   /**
@@ -107,7 +107,7 @@ export class SingleMotorDevice extends CoralDevice {
    * @param position - Value to set as the new zero point (default `0`).
    */
   async resetMotorRelativePosition(position: number = 0): Promise<void> {
-    await this.connection.request(createMotorResetRelativePositionCommand(MotorBits.Left, position));
+    await this.connection.send(createMotorResetRelativePositionCommand(MotorBits.Left, position));
   }
 
   /**
@@ -120,7 +120,7 @@ export class SingleMotorDevice extends CoralDevice {
 
   /** Stop the motor. */
   async stopMotor(): Promise<void> {
-    await this.connection.request(createMotorStopCommand(MotorBits.Left));
+    await this.connection.send(createMotorStopCommand(MotorBits.Left));
   }
 
   /**
@@ -128,7 +128,7 @@ export class SingleMotorDevice extends CoralDevice {
    * @param endState - The desired end state (e.g. `MotorEndState.Brake`, `MotorEndState.Coast`, `MotorEndState.Hold`).
    */
   async setMotorEndState(endState: MotorEndState): Promise<void> {
-    await this.connection.request(createMotorSetEndStateCommand(MotorBits.Left, endStateToEnum(endState)));
+    await this.connection.send(createMotorSetEndStateCommand(MotorBits.Left, endStateToEnum(endState)));
   }
 
   /**
@@ -137,7 +137,7 @@ export class SingleMotorDevice extends CoralDevice {
    * @param deceleration - Deceleration value (0–255, defaults to `acceleration`).
    */
   async setMotorAcceleration(acceleration: number, deceleration: number = acceleration): Promise<void> {
-    await this.connection.request(
+    await this.connection.send(
       createMotorSetAccelerationCommand(MotorBits.Left, clampAcceleration(acceleration), clampAcceleration(deceleration))
     );
   }

@@ -18,6 +18,11 @@ export class MockConnection extends EventEmitter {
     super();
   }
 
+  async send(command: CoralCommand): Promise<void> {
+    const encoded = encodeMessage(command);
+    this.writes.push(Buffer.from(encoded));
+  }
+
   async request(command: CoralCommand): Promise<CoralIncomingMessage> {
     const encoded = encodeMessage(command);
     this.writes.push(Buffer.from(encoded));
