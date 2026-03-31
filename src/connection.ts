@@ -108,7 +108,7 @@ export class CoralConnection extends EventEmitter {
     await writeWithoutResponse(this.writeChar, encodeMessage(command));
   }
 
-  async request<T extends CoralIncomingMessage = CoralIncomingMessage>(
+  request<T extends CoralIncomingMessage = CoralIncomingMessage>(
     command: CoralCommand,
     timeoutMs: number = DEFAULT_TIMEOUT_MS
   ): Promise<T> {
@@ -137,7 +137,9 @@ export class CoralConnection extends EventEmitter {
     });
 
     log("sending command %s (%s) params=%o", formatMessageName(command.id), key, getMessageParams(command));
-    await writeWithoutResponse(this.writeChar, encodeMessage(command));
+    writeWithoutResponse(this.writeChar, encodeMessage(command)).catch((err) => {
+      this.rejectPending(key, err instanceof Error ? err : new Error(String(err)));
+    });
     return messagePromise;
   }
 
